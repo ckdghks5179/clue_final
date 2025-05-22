@@ -13,9 +13,9 @@ namespace clue_game6
     {
         public string name;
         public int id;
-        //public PictureBox player;
 
         public List<Card> hands; //가지고 있는 카드
+        //wnwww
 
         public int x; //열
         public int y; //행
