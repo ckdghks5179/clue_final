@@ -1,0 +1,13 @@
+C:\Users\ckdgh\source\repos\clue_game6\clue_game6\bin\Debug\clue_game6.exe.config
+C:\Users\ckdgh\source\repos\clue_game6\clue_game6\bin\Debug\clue_game6.exe
+C:\Users\ckdgh\source\repos\clue_game6\clue_game6\bin\Debug\clue_game6.pdb
+C:\Users\ckdgh\source\repos\clue_game6\clue_game6\obj\Debug\clue_game6.csproj.AssemblyReference.cache
+C:\Users\ckdgh\source\repos\clue_game6\clue_game6\obj\Debug\clue_game6.Form1.resources
+C:\Users\ckdgh\source\repos\clue_game6\clue_game6\obj\Debug\clue_game6.Form2.resources
+C:\Users\ckdgh\source\repos\clue_game6\clue_game6\obj\Debug\clue_game6.Form3.resources
+C:\Users\ckdgh\source\repos\clue_game6\clue_game6\obj\Debug\clue_game6.PlayerChoose.resources
+C:\Users\ckdgh\source\repos\clue_game6\clue_game6\obj\Debug\clue_game6.Properties.Resources.resources
+C:\Users\ckdgh\source\repos\clue_game6\clue_game6\obj\Debug\clue_game6.csproj.GenerateResource.cache
+C:\Users\ckdgh\source\repos\clue_game6\clue_game6\obj\Debug\clue_game6.csproj.CoreCompileInputs.cache
+C:\Users\ckdgh\source\repos\clue_game6\clue_game6\obj\Debug\clue_game6.exe
+C:\Users\ckdgh\source\repos\clue_game6\clue_game6\obj\Debug\clue_game6.pdb
