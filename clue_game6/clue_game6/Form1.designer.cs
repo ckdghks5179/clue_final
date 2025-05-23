@@ -39,8 +39,6 @@
             this.btnRight = new System.Windows.Forms.Button();
             this.btnLeft = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
-            this.player1 = new System.Windows.Forms.PictureBox();
-            this.player2 = new System.Windows.Forms.PictureBox();
             this.btnNote = new System.Windows.Forms.Button();
             this.btnSug = new System.Windows.Forms.Button();
             this.btnFinalSug = new System.Windows.Forms.Button();
@@ -51,14 +49,12 @@
             this.label3 = new System.Windows.Forms.Label();
             this.btnSaveLog = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.player1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.player2)).BeginInit();
             this.SuspendLayout();
             // 
             // btnRoll
             // 
             this.btnRoll.Location = new System.Drawing.Point(947, 696);
-            this.btnRoll.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnRoll.Margin = new System.Windows.Forms.Padding(4);
             this.btnRoll.Name = "btnRoll";
             this.btnRoll.Size = new System.Drawing.Size(162, 72);
             this.btnRoll.TabIndex = 0;
@@ -69,7 +65,7 @@
             // btnTurnEnd
             // 
             this.btnTurnEnd.Location = new System.Drawing.Point(947, 788);
-            this.btnTurnEnd.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnTurnEnd.Margin = new System.Windows.Forms.Padding(4);
             this.btnTurnEnd.Name = "btnTurnEnd";
             this.btnTurnEnd.Size = new System.Drawing.Size(162, 72);
             this.btnTurnEnd.TabIndex = 1;
@@ -91,7 +87,7 @@
             // 
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
             this.pictureBox1.Location = new System.Drawing.Point(13, 12);
-            this.pictureBox1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.pictureBox1.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(888, 800);
             this.pictureBox1.TabIndex = 4;
@@ -110,7 +106,7 @@
             // btnUp
             // 
             this.btnUp.Location = new System.Drawing.Point(1281, 640);
-            this.btnUp.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnUp.Margin = new System.Windows.Forms.Padding(4);
             this.btnUp.Name = "btnUp";
             this.btnUp.Size = new System.Drawing.Size(56, 76);
             this.btnUp.TabIndex = 6;
@@ -121,7 +117,7 @@
             // btnDown
             // 
             this.btnDown.Location = new System.Drawing.Point(1281, 802);
-            this.btnDown.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnDown.Margin = new System.Windows.Forms.Padding(4);
             this.btnDown.Name = "btnDown";
             this.btnDown.Size = new System.Drawing.Size(56, 76);
             this.btnDown.TabIndex = 7;
@@ -132,7 +128,7 @@
             // btnRight
             // 
             this.btnRight.Location = new System.Drawing.Point(1348, 732);
-            this.btnRight.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnRight.Margin = new System.Windows.Forms.Padding(4);
             this.btnRight.Name = "btnRight";
             this.btnRight.Size = new System.Drawing.Size(80, 52);
             this.btnRight.TabIndex = 8;
@@ -143,7 +139,7 @@
             // btnLeft
             // 
             this.btnLeft.Location = new System.Drawing.Point(1185, 732);
-            this.btnLeft.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnLeft.Margin = new System.Windows.Forms.Padding(4);
             this.btnLeft.Name = "btnLeft";
             this.btnLeft.Size = new System.Drawing.Size(82, 52);
             this.btnLeft.TabIndex = 9;
@@ -161,30 +157,10 @@
             this.label1.TabIndex = 10;
             this.label1.Text = "Remain:";
             // 
-            // player1
-            // 
-            this.player1.Image = ((System.Drawing.Image)(resources.GetObject("player1.Image")));
-            this.player1.Location = new System.Drawing.Point(9, 10);
-            this.player1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.player1.Name = "player1";
-            this.player1.Size = new System.Drawing.Size(24, 24);
-            this.player1.TabIndex = 11;
-            this.player1.TabStop = false;
-            // 
-            // player2
-            // 
-            this.player2.Image = ((System.Drawing.Image)(resources.GetObject("player2.Image")));
-            this.player2.Location = new System.Drawing.Point(730, 500);
-            this.player2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.player2.Name = "player2";
-            this.player2.Size = new System.Drawing.Size(24, 24);
-            this.player2.TabIndex = 12;
-            this.player2.TabStop = false;
-            // 
             // btnNote
             // 
             this.btnNote.Location = new System.Drawing.Point(958, 60);
-            this.btnNote.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnNote.Margin = new System.Windows.Forms.Padding(4);
             this.btnNote.Name = "btnNote";
             this.btnNote.Size = new System.Drawing.Size(175, 60);
             this.btnNote.TabIndex = 13;
@@ -195,7 +171,7 @@
             // btnSug
             // 
             this.btnSug.Location = new System.Drawing.Point(958, 176);
-            this.btnSug.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnSug.Margin = new System.Windows.Forms.Padding(4);
             this.btnSug.Name = "btnSug";
             this.btnSug.Size = new System.Drawing.Size(175, 60);
             this.btnSug.TabIndex = 14;
@@ -207,7 +183,7 @@
             // 
             this.btnFinalSug.ForeColor = System.Drawing.Color.Red;
             this.btnFinalSug.Location = new System.Drawing.Point(958, 302);
-            this.btnFinalSug.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnFinalSug.Margin = new System.Windows.Forms.Padding(4);
             this.btnFinalSug.Name = "btnFinalSug";
             this.btnFinalSug.Size = new System.Drawing.Size(206, 84);
             this.btnFinalSug.TabIndex = 15;
@@ -218,7 +194,7 @@
             // textBox1
             // 
             this.textBox1.Location = new System.Drawing.Point(22, 860);
-            this.textBox1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.textBox1.Margin = new System.Windows.Forms.Padding(6);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
             this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
@@ -228,7 +204,7 @@
             // button1
             // 
             this.button1.Location = new System.Drawing.Point(884, 924);
-            this.button1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.button1.Margin = new System.Windows.Forms.Padding(6);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(225, 46);
             this.button1.TabIndex = 17;
@@ -239,7 +215,7 @@
             // textBox2
             // 
             this.textBox2.Location = new System.Drawing.Point(947, 452);
-            this.textBox2.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.textBox2.Margin = new System.Windows.Forms.Padding(6);
             this.textBox2.Multiline = true;
             this.textBox2.Name = "textBox2";
             this.textBox2.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
@@ -290,8 +266,6 @@
             this.Controls.Add(this.btnFinalSug);
             this.Controls.Add(this.btnSug);
             this.Controls.Add(this.btnNote);
-            this.Controls.Add(this.player2);
-            this.Controls.Add(this.player1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btnLeft);
             this.Controls.Add(this.btnRight);
@@ -302,13 +276,11 @@
             this.Controls.Add(this.dice1);
             this.Controls.Add(this.btnTurnEnd);
             this.Controls.Add(this.btnRoll);
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form1";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.player1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.player2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -326,8 +298,6 @@
         private System.Windows.Forms.Button btnRight;
         private System.Windows.Forms.Button btnLeft;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.PictureBox player1;
-        private System.Windows.Forms.PictureBox player2;
         private System.Windows.Forms.Button btnNote;
         private System.Windows.Forms.Button btnSug;
         private System.Windows.Forms.Button btnFinalSug;

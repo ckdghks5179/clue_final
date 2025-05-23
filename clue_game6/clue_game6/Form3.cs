@@ -28,6 +28,18 @@ namespace clue_game6
 
         }  
 
+        public void SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (manBox.SelectedIndex != -1 && weaponBox.SelectedIndex != -1 && roomBox.SelectedIndex != -1)
+            {
+                button1.Enabled = true;
+            }
+            else
+            {
+                button1.Enabled = false;
+            }
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
             if (choose == 1)
@@ -46,7 +58,7 @@ namespace clue_game6
                 if (openMatch.Count > 0)
                 {
                     string matched = string.Join(", ", openMatch.Select(c => c.name));
-                    gameState.AddLog($"→ 공개된 카드 '{matched}'로 자동 반박됨.");
+                    gameState.AddLog($"→ 공개된 카드 '{matched}'로 반박됨.");
                     MessageBox.Show($"공개 카드({matched})로 반박되었습니다.");
                     this.Close();
                     return;
@@ -98,13 +110,13 @@ namespace clue_game6
                     gameState.answer[1].name == weaponBox.Text &&
                     gameState.answer[2].name == roomBox.Text)
                 {
-                    gameState.AddLog($"🎉 Player {player.id + 1}가 정답을 맞춰서 게임에서 승리했습니다!");
+                    gameState.AddLog($"Player {player.id + 1}가 정답을 맞춰서 게임에서 승리했습니다!");
                     MessageBox.Show("정답입니다! 게임에서 승리했습니다!");
                     Application.Exit(); // 또는 승리 화면
                 }
                 else
                 {
-                    gameState.AddLog($"❌ Player {player.id + 1}의 최종 추리 실패 — 탈락");
+                    gameState.AddLog($"Player {player.id + 1}의 최종 추리 실패 — 탈락");
                     MessageBox.Show("틀렸습니다. 당신은 탈락입니다.");
                     player.isAlive = false;
                 }
@@ -137,6 +149,11 @@ namespace clue_game6
                    
                 }
             }
+
+        private void Form3_Load(object sender, EventArgs e)
+        {
+            button1.Enabled = false;
         }
+    }
     }
 
