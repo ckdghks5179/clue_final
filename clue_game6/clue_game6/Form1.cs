@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using clue_game6;
+using System.Security.Cryptography;
 
 
 //https://github.com/ckdghks5179/clue_game
@@ -63,11 +64,11 @@ namespace clue_game6
         private void UpdateControlState()
         {
             bool isMyTurn = gameState.CurrentTurn == playerId;
-            btnRoll.Enabled = isMyTurn;
+            btnRoll.Enabled = isMyTurn && !player.hasRolled;
             btnTurnEnd.Enabled = isMyTurn;
 
-            btnFinalSug.Enabled = false;
-            btnSug.Enabled = false;
+            btnFinalSug.Enabled = isMyTurn && player.isFinalRoom;
+            btnSug.Enabled = isMyTurn && player.isInRoom && !player.hasSuggested;
             /* btnUp.Enabled = isMyTurn;
              btnDown.Enabled = isMyTurn;
              btnLeft.Enabled = isMyTurn;
@@ -95,12 +96,12 @@ namespace clue_game6
         private void Form1_Load(object sender, EventArgs e)
         {
             this.Text = $"Clue Game - Player {playerId + 1} ({player.name})";
-            for(int i =0;i < player.hands.Count(); i++)
+            for (int i = 0; i < player.hands.Count(); i++)
             {
                 textBox2.Text += "<" + player.hands[i].type + ">" + " " + player.hands[i].name + "\r\n";
             }
             textBox2.Text += "-----public card------\r\n";
-            for (int i =0; i< gameState.openCard.Count();i++)
+            for (int i = 0; i < gameState.openCard.Count(); i++)
             {
                 textBox2.Text += "<" + gameState.openCard[i].type + ">" + " " + gameState.openCard[i].name + "\r\n";
             }
@@ -138,6 +139,8 @@ namespace clue_game6
             int diceValue = RollDice();
             dice1.Text = diceValue.ToString();
             lbRemain.Text = diceValue.ToString();
+
+            player.hasRolled = true;
             btnRoll.Enabled = false;
         }
 
@@ -149,81 +152,98 @@ namespace clue_game6
             int newY = player.y + dy;
 
             if (newX < 0 || newX >= 25 || newY < 0 || newY >= 24) return;
-            if (gameState.clue_map[newX, newY] == 1) return;
+            if (gameState.clue_map[newX, newY] == 1) return; // 벽이면 막음
 
-            foreach (var other in gameState.Players) //player 겹치는거 방지
+            // 다른 플레이어가 해당 좌표에 있는 경우 이동 금지
+            foreach (var other in gameState.Players)
             {
                 if (other != player && other.x == newX && other.y == newY)
                     return;
             }
 
-            if (gameState.clue_map[newX, newY] == 2) //방에 들어온 경우 이동횟수 모두 소모
+            //방 진입 , 최종 방 진입 여부 판정
+            Point dest = new Point(newY, newX); // 열, 행 순서
+
+            // 방 입구 좌표일 경우 방 진입
+            if (gameState.roomTiles.Contains(dest) || gameState.clue_map[newX, newY] == 2)
             {
                 player.isInRoom = true;
-                btnSug.Enabled = player.isInRoom;
+                player.isFinalRoom = false;
                 lbRemain.Text = "1";
             }
-            else if(gameState.clue_map[newX, newY] == 5)
+            //최종 추리 방 입구
+            else if (gameState.finalRoomTiles.Contains(dest) || gameState.clue_map[newX, newY] == 5)
             {
-                player.isFinalRoom = true;
-                btnFinalSug.Enabled = player.isFinalRoom;
-                lbRemain.Text = "1";
-            }
-            else
                 player.isInRoom = false;
-
-            //방에서 나온 경우 있었던 위치를 0이 아닌 2로 바꿈
-            if (gameState.clue_map[player.x, player.y] == 2)
-            {
-                gameState.clue_map[player.x, player.y] = 2;
+                player.isFinalRoom = true;
+                lbRemain.Text = "1";
             }
             else
-                gameState.clue_map[player.x, player.y] = 0;  //why??
+            {
+                player.isInRoom = false;
+                player.isFinalRoom = false;
+            }
 
+
+            // 이전 위치가 방이면 clue_map을 2로, 아니면 0으로 되돌림
+            if (gameState.clue_map[player.x, player.y] == 2 || gameState.clue_map[player.x, player.y] == 5)
+                gameState.clue_map[player.x, player.y] = gameState.clue_map[player.x, player.y]; // 그대로 유지
+            else
+                gameState.clue_map[player.x, player.y] = 0;
+
+            // 이동 및 좌표 업데이트
             player.x = newX;
             player.y = newY;
-            gameState.clue_map[newX, newY] = 3; //why??
+            gameState.clue_map[newX, newY] = 3;
             playerBoxes[playerId].Location = gameState.clue_map_point[newX, newY];
+
+            // 이동 횟수 감소
             lbRemain.Text = (int.Parse(lbRemain.Text) - 1).ToString();
 
+            // 위치 및 버튼 상태 갱신
             foreach (var form in PlayerChoose.AllPlayerForms)
             {
-                form.UpdatePlayerPositions(); //수정
+                form.UpdatePlayerPositions();
+                form.UpdateControlState(); // 버튼 상태 동기화
             }
         }
+
 
 
         private void btnUp_Click(object sender, EventArgs e)
         {
 
             TryMove(-1, 0);
-            
 
-        }   
+
+        }
         private void btnDown_Click(object sender, EventArgs e)
         {
 
             TryMove(1, 0);
-           
+
         }
 
         private void btnRight_Click(object sender, EventArgs e)
         {
 
             TryMove(0, 1);
-           
+
         }
 
         private void btnLeft_Click(object sender, EventArgs e)
         {
             TryMove(0, -1);
-           
+
         }
 
         private void btnTurnEnd_Click(object sender, EventArgs e)
         {
             //btnRoll.Enabled = true;
             lbRemain.Text = "0";
+            player.hasRolled = false;
+            player.hasSuggested = false;
+
             gameState.AdvanceTurn();
             foreach (var form in PlayerChoose.AllPlayerForms)
             {
@@ -234,14 +254,20 @@ namespace clue_game6
 
         private void btnNote_Click(object sender, EventArgs e)
         {
-            notePad = new Form2(player,gameState);
+            notePad = new Form2(player, gameState);
             notePad.Show();
         }
 
         private void btnSug_Click(object sender, EventArgs e)
         {
+            if (player.hasSuggested)
+            {
+                MessageBox.Show("이미 추리를 했습니다.");
+                return;
+            }
             suggest = new Form3(gameState, player, 1, playerId);
             suggest.Show();
+            player.hasSuggested = true;
         }
 
         private void btnFinalSug_Click(object sender, EventArgs e)
@@ -255,6 +281,18 @@ namespace clue_game6
             suggest = new Form3(gameState, player, 3, playerId);
             suggest.Show();
         }
+
+        private void btnSaveLog_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "Text Files (*.txt)|*.txt";
+            saveFileDialog.FileName = $"ClueGameLog_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                gameState.SaveLogToFile(saveFileDialog.FileName);
+            }
+        }
     }
- }
+}
 
