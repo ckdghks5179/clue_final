@@ -288,6 +288,8 @@ namespace clue_game6
             saveFileDialog.Filter = "Text Files (*.txt)|*.txt";
             saveFileDialog.FileName = $"ClueGameLog_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
 
+            pictureBox1.Image.Save("extracted_image.png", System.Drawing.Imaging.ImageFormat.Png);
+
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
                 gameState.SaveLogToFile(saveFileDialog.FileName);
