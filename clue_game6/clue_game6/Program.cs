@@ -19,8 +19,12 @@ namespace clue_game6
 
             PlayerChoose chooser = new PlayerChoose();
             chooser.ShowDialog();
+            if (PlayerChoose.MainFormToRun != null)
+            {
+                Application.Run(PlayerChoose.MainFormToRun);  // 온라인 모드gina
+            }
 
-            if (PlayerChoose.AllPlayerForms.Count > 0)
+            else if(PlayerChoose.AllPlayerForms.Count > 0)
             {
                 // 첫 번째 플레이어의 Form1을 메인폼으로 실행
                 Application.Run(PlayerChoose.AllPlayerForms[0]);
