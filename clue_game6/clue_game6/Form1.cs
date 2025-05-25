@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using clue_game6;
+using System.Net.Sockets;
+using System.Threading;
+using static System.Windows.Forms.AxHost;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 
 //https://github.com/ckdghks5179/clue_game
@@ -21,7 +25,10 @@ namespace clue_game6
     {
         Form2 notePad;
         Form3 suggest;
-
+        //온라인 모드
+        private NetworkStream stream;       // 联机使用的网络流
+        private bool isNetworkMode = false; // 区分是否为联机模式
+        //온라인 모드
         private GameState gameState;
         private int playerId;
         private PictureBox myPlayerBox;
@@ -48,26 +55,115 @@ namespace clue_game6
             Random random = new Random();
             return random.Next(2, 13);
         }
-
+        private void Init(GameState state, int id)
+        {
+            this.gameState = state;
+            this.playerId = id;
+            this.player = state.Players[id];
+        }
         public Form1(GameState gamestate1, int playerId)
         {
             InitializeComponent();
-            //InitializeClueMap_Point();
-            //InitializeClueMap();
-            //OpenPlayerChooseForm();
-            this.gameState = gamestate1;
-            this.playerId = playerId;
-            this.player = playerList[playerId];
+            Init(gamestate1, playerId);
+            this.isNetworkMode = false;//온라인 모드가 아님
         }
+        /// <summary>
+        /// 온라인 모드
+        /// </summary>
+        public Form1(GameState state, int playerId, NetworkStream stream)
+        {
+            InitializeComponent();
+            Init(state, playerId);
+            this.stream = stream;
+            this.isNetworkMode = true;
+        }
+        private void StartListening()
+        {
+            Thread t = new Thread(new ThreadStart(ReceiveLoop));
+            t.IsBackground = true;
+            t.Start();
+        }
+        private void ReceiveLoop()
+        {
+            byte[] buffer = new byte[1024];
+            while (true)
+            {
+                int bytes = stream.Read(buffer, 0, buffer.Length);
+                string msg = Encoding.UTF8.GetString(buffer, 0, bytes).Trim();
 
+                string[] parts = msg.Split('|');
+                if (parts[0] == "MOVE")
+                {
+                    int id = int.Parse(parts[1]);
+                    int x = int.Parse(parts[2]);
+                    int y = int.Parse(parts[3]);
+
+                    gameState.Players[id].x = x;
+                    gameState.Players[id].y = y;
+                    this.Invoke((MethodInvoker)(() =>
+                    {
+                        foreach (var form in PlayerChoose.AllPlayerForms)
+                        {
+                            form.UpdatePlayerPositions();
+                        }
+                    }));
+                }
+                else if (parts[0] == "TURN")
+                {
+                    int index = int.Parse(parts[1]);
+                    Invoke(new Action(() => SetTurn(index)));
+                }
+                else if (parts[0] == "END_TURN")
+                {
+                    int nextTurn = (gameState.CurrentTurn + 1) % gameState.TotalPlayers;
+                    Invoke(new Action(() => SetTurn(nextTurn)));
+                }
+                else if(parts[0] == "SUGGEST_REPLY")
+                {
+                    int from = int.Parse(parts[1]);
+                    int to = int.Parse(parts[2]);
+                    string type = parts[3];
+                    string name = parts[4];
+
+                    if (playerId == to)
+                    {
+                        textBox1.AppendText($"플레이어 {from + 1} 이(가) 카드를 보여줬습니다: <{type}> {name}\r\n");
+                    }
+                    else
+                    {
+                        textBox1.AppendText($"플레이어 {from + 1} 이(가) 플레이어 {to + 1} 에게 카드를 보여줬습니다.\r\n");
+                    }
+                }
+                else if (parts[0] == "FINAL_SUGGEST" && parts.Length == 5)
+                {
+                    int who = int.Parse(parts[1]);
+                    string man = parts[2];
+                    string weapon = parts[3];
+                    string room = parts[4];
+
+                    string log = $"[최종추리] Player{who + 1}: {man}가 {room}에서 {weapon}으로 범행";
+                    Invoke(new Action(() =>
+                    {
+                        textBox1.AppendText(log + "\r\n");
+                    }));
+                }
+            }
+        }
+        /// ///////////////////
         private void UpdateControlState()
         {
             bool isMyTurn = gameState.CurrentTurn == playerId;
             btnRoll.Enabled = isMyTurn;
             btnTurnEnd.Enabled = isMyTurn;
+        
+            btnSug.Enabled = isMyTurn && player.isInRoom;
+            btnFinalSug.Enabled = isMyTurn && player.isFinalRoom;
 
             btnFinalSug.Enabled = false;
             btnSug.Enabled = false;
+            //btnFinalSug.Enabled = false;
+            //btnSug.Enabled = false;
+
             /* btnUp.Enabled = isMyTurn;
              btnDown.Enabled = isMyTurn;
              btnLeft.Enabled = isMyTurn;
@@ -83,6 +179,7 @@ namespace clue_game6
 
         public void UpdatePlayerPositions()
         {
+
             for (int i = 0; i < gameState.TotalPlayers; i++)
             {
                 var p = gameState.Players[i];
@@ -131,10 +228,13 @@ namespace clue_game6
                 }
             }
             UpdateControlState();
+            // Gina온라인 모드
+            if (isNetworkMode) StartListening();
         }
 
         private void btnRoll_Click(object sender, EventArgs e)
         {
+            
             int diceValue = RollDice();
             dice1.Text = diceValue.ToString();
             lbRemain.Text = diceValue.ToString();
@@ -143,6 +243,7 @@ namespace clue_game6
 
         private void TryMove(int dx, int dy)
         {
+           
             if (int.Parse(lbRemain.Text) <= 0) return;
 
             int newX = player.x + dx;
@@ -182,17 +283,81 @@ namespace clue_game6
 
             player.x = newX;
             player.y = newY;
-            gameState.clue_map[newX, newY] = 3; //why??
-            playerBoxes[playerId].Location = gameState.clue_map_point[newX, newY];
+            //gina온라인 모드    
             lbRemain.Text = (int.Parse(lbRemain.Text) - 1).ToString();
 
+            if (isNetworkMode && stream != null && stream.CanWrite)
+            {
+
+                SendMessage($"MOVE|{playerId}|{newX}|{newY}");
+            }
+
+            playerBoxes[playerId].Location = gameState.clue_map_point[newX, newY];
             foreach (var form in PlayerChoose.AllPlayerForms)
             {
-                form.UpdatePlayerPositions(); //수정
+                form.gameState.Players[playerId].x = newX;
+                form.gameState.Players[playerId].y = newY;
+                if (form.playerBoxes.ContainsKey(playerId))
+                {
+                    form.playerBoxes[playerId].Location = form.gameState.clue_map_point[newX, newY];
+                }
             }
         }
+        /// <summary>
+        /// gina온라인 모드 방송 정보
+        /// </summary>
+        /// <param name="msg"></param>
+        public void SendMessage(string msg)
+        {
+            if (stream != null && stream.CanWrite)
+            {
+                byte[] data = Encoding.UTF8.GetBytes(msg + "\n");
+                stream.Write(data, 0, data.Length);
+                Console.WriteLine($"[CLIENT] 📤 Sent Message: {msg}");
+            }
+            else
+            {
+                Console.WriteLine($"[CLIENT] ❌ 无法发送消息：stream 为 null 或已关闭！");
+            }
+        }
+        //gina
+        public void MovePlayerExternally(int id, int x, int y)
+        {
+            if (id >= 0 && id < gameState.TotalPlayers)
+            {
+                var p = gameState.Players[id];
+                p.x = x;
+                p.y = y;
+                playerBoxes[id].Location = gameState.clue_map_point[x, y];
+            }
+        }
+        //gina
+        public void SetTurn(int index)
+        {
+            //gameState.CurrentTurn = index;
+            //if (playerId == index)
+            //{
+            //    MessageBox.Show("당신의 턴입니다!", "Turn", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //}
 
+            //UpdateControlState();
+            gameState.CurrentTurn = index;
+            lbRemain.Text = "0"; // ✅ 清空步数防止残留
 
+            if (playerId == index)
+            {
+                btnRoll.Enabled = true;
+                btnTurnEnd.Enabled = false;
+                MessageBox.Show("당신의 턴입니다!");
+            }
+            else
+            {
+                btnRoll.Enabled = false;
+                btnTurnEnd.Enabled = false;
+            }
+
+            UpdateControlState();
+        }
         private void btnUp_Click(object sender, EventArgs e)
         {
 
@@ -222,13 +387,20 @@ namespace clue_game6
 
         private void btnTurnEnd_Click(object sender, EventArgs e)
         {
-            //btnRoll.Enabled = true;
-            lbRemain.Text = "0";
-            gameState.AdvanceTurn();
-            foreach (var form in PlayerChoose.AllPlayerForms)
+            // Gina온라인 모드
+            if (isNetworkMode)
             {
-                form.UpdateControlState();
-                form.UpdatePlayerPositions();
+                if (stream != null && stream.CanWrite)
+                    SendMessage($"END_TURN|{playerId}");
+            }
+            else
+            {
+                gameState.AdvanceTurn();
+                foreach (var form in PlayerChoose.AllPlayerForms)
+                {
+                    form.UpdateControlState();
+                    form.UpdatePlayerPositions();
+                }
             }
         }
 
@@ -240,20 +412,46 @@ namespace clue_game6
 
         private void btnSug_Click(object sender, EventArgs e)
         {
-            suggest = new Form3(gameState, player, 1, playerId);
+            // Gina联机模式
+            if (isNetworkMode)
+                suggest = new Form3(gameState, player, 1, playerId, true, stream); // 联机构造
+            else
+                suggest = new Form3(gameState, player, 1, playerId);
             suggest.Show();
         }
 
         private void btnFinalSug_Click(object sender, EventArgs e)
         {
-            suggest = new Form3(gameState, player, 2, playerId);
+            // Gina联机模式
+            if (isNetworkMode)
+                suggest = new Form3(gameState, player, 2, playerId, true, stream);
+            else
+                suggest = new Form3(gameState, player, 2, playerId);
             suggest.Show();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            suggest = new Form3(gameState, player, 3, playerId);
+            // Gina联机模式
+            if (isNetworkMode)
+                suggest = new Form3(gameState, player, 3, playerId, true, stream);
+            else
+                suggest = new Form3(gameState, player, 3, playerId);
             suggest.Show();
+        }
+        //gina
+        public void ShowSuggestionMessage(string text)
+        {
+            textBox1.AppendText(text + "\r\n");
+        }
+        public bool IsNetworkMode()
+        {
+            return isNetworkMode;
+        }
+
+        public void SendSuggestion(string text)
+        {
+            SendMessage($"SUGGEST|{text}");
         }
     }
  }

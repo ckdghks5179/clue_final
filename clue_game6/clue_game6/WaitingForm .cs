@@ -35,7 +35,7 @@ namespace clue_game6
             this.stream = client.GetStream();
             txtPlayerName.Text = myName;
             txtServerIP.Text = client.Client.RemoteEndPoint.ToString();
-            lblPlayerCount.Text = maxPlayers.ToString();
+            //lblPlayerCount.Text = maxPlayers.ToString();
 
 
         }
@@ -85,16 +85,12 @@ namespace clue_game6
                     string msg = rawMsg.Trim();
                     if (string.IsNullOrEmpty(msg)) continue;
                     //GAME_START
-                    Console.WriteLine("받은 메시지: " + msg);
                     if (msg.StartsWith("GAME_START|"))
-                    {
-                        Console.WriteLine("收到原始 GAME_START 消息：" + msg);  // ✅ 添加这行
+                    {Console.WriteLine("收到原始 GAME_START 消息：" + msg);  // ✅ 添加这行
                         try
                         {
                             // 提取 JSON 并反序列化 GameState
                             string json = msg.Substring("GAME_START|".Length);
-                            File.WriteAllText("debug_received.json", json); // ✅ 写入文件调试
-                            Console.WriteLine("📝 已保存 JSON 内容到 debug_received.json");
                             var serializer = new DataContractJsonSerializer(typeof(NetworkGameState));
                             using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(json)))
                             {
@@ -126,9 +122,52 @@ namespace clue_game6
                             MessageBox.Show("게임 시작 중 오류 발생: " + ex.Message, "에러", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
+                    //处理游戏回合返回
+                    else if (msg.StartsWith("TURN|"))
+                    {
+                        string turnStr = msg.Substring("TURN|".Length);
+                        if (int.TryParse(turnStr, out int turnIndex))
+                        {
+                            this.Invoke(new MethodInvoker(delegate
+                            {
+                                if (this.Owner is Form1 gameForm)
+                                {
+                                    gameForm.SetTurn(turnIndex);
+                                }
+                            }));
+                        }
+                    }
 
+                    else if (msg.StartsWith("MOVE|"))
+                    {
+                        string[] parts = msg.Split('|');
+                        if (parts.Length == 4 &&
+                            int.TryParse(parts[1], out int moveId) &&
+                            int.TryParse(parts[2], out int x) &&
+                            int.TryParse(parts[3], out int y))
+                        {
 
-
+                            this.Invoke(new MethodInvoker(delegate
+                            {
+                                if (this.Owner is Form1 gameForm)
+                                {
+                                    gameForm.MovePlayerExternally(moveId, x, y);
+                                }
+                            }));
+                            
+                        }
+                    }
+                    else if (msg.StartsWith("SUGGEST|"))
+                    {
+                        string suggestionText = msg.Substring("SUGGEST|".Length);
+                        this.Invoke(new MethodInvoker(() =>
+                        {
+                            if (Application.OpenForms["Form1"] is Form1 gameForm)
+                            {
+                                gameForm.ShowSuggestionMessage(suggestionText);
+                            }
+                        }));
+                    }
                     else if (msg.StartsWith("PLAYER_COUNT|"))
                     {
                         string countStr = msg.Substring("PLAYER_COUNT|".Length);
@@ -167,9 +206,9 @@ namespace clue_game6
         }
         private void OpenGameForm(GameState state, int myId)
         {
-            Form1 gameForm = new Form1(state, myId);
-            gameForm.Show();
             this.Hide();
+            Form1 gameForm = new Form1(state, myId,stream);
+            gameForm.Show();
         }
 
         private void UpdatePlayerCountLabel(string countStr)
