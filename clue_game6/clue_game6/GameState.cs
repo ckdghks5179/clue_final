@@ -9,8 +9,6 @@ using System.Windows.Forms;
 
 namespace clue_game6
 {
-
-
     public class Player
     {
         public string name;
@@ -77,14 +75,14 @@ namespace clue_game6
                 { 1, 1, 1, 4, 1, 1, 0, 0, 1, 1, 1, 4, 1, 1, 1, 1, 0, 0, 1, 1, 1, 4, 1, 1},
                 { 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1},
                 { 1, 1, 1, 1, 1, 1, 0, 0, 2, 1, 1, 1, 1, 1, 1, 2, 0, 0, 0, 2, 1, 1, 1, 1},
-                { 1, 1, 1, 1, 2, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
-                { 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 1, 1, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+                { 1, 1, 1, 1, 2, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+                { 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 1, 1, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1},
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1},
                 { 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1},
                 { 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 5, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1},
                 { 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1},
                 { 1, 1, 1, 4, 1, 1, 1, 2, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 2, 1},
-                { 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 5, 1, 4, 1, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                { 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 5, 1, 4, 1, 5, 0, 0, 0, 0, 0, 0, 0, 0, 1},
                 { 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 2, 1, 1, 1},
                 { 1, 1, 1, 1, 1, 1, 2, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1},
                 { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 5, 1, 1, 0, 0, 2, 1, 1, 1, 1, 1, 1},
@@ -100,15 +98,15 @@ namespace clue_game6
 
         public List<Point> roomTiles = new List<Point> //문 좌표
         {
-            new Point(8, 5), new Point(15, 5), new Point(4, 6), new Point(9, 7),
-            new Point(13, 12),new Point(18, 13),new Point(11, 14),new Point(22, 13),
-            new Point(20, 14),new Point(11, 15),new Point(17, 16),new Point(11, 18),new Point(12, 19),
-            new Point(18, 21), new Point(19,5)
+            new Point(8, 5),　new Point(15, 5),　new Point(19, 5),　new Point(4, 6),　new Point(9, 7),
+            new Point(14, 7),　new Point(18, 9),　new Point(7, 12),　new Point(22, 12),　new Point(20, 14),
+            new Point(6, 15),　new Point(17, 16),　new Point(11, 18),new Point(12, 18),　new Point(5, 19),
+            new Point(14, 20),　new Point(18, 21)
         };
 
         public List<Point> finalRoomTiles = new List<Point> //최종추리방 문 좌표
         {
-            new Point(12, 11), new Point(10, 13), new Point(12, 14), new Point(16, 12)
+            new Point(12, 10), new Point(10, 13), new Point(14, 13), new Point(12, 16)
         };
 
         public int TotalPlayers { get; set; }
@@ -131,9 +129,7 @@ namespace clue_game6
         public void initializeNote()
         {
             for (int i = 0; i < Players.Length; i++)
-            {
                 PlayerNotes[i] = new PlayerNoteData();
-            }
         }
 
         public void AdvanceTurn()
@@ -143,6 +139,9 @@ namespace clue_game6
             {
                 CurrentTurn = (CurrentTurn + 1) % total;
             } while (!Players[CurrentTurn].isAlive);
+
+            //누구의 턴입니다 메시지박스 출력
+            MessageBox.Show($"Player {CurrentTurn + 1}의 턴입니다.");
         }
 
         public static int[,] GetInitialMap()
@@ -172,8 +171,7 @@ namespace clue_game6
                     if (temp != answer[i].Name)
                         Deck.Add(new Card(types[i], temp));
                 }
-            }//카드 할당 오류 수정
-
+            }
 
             Deck = Deck.OrderBy(x => rand.Next()).ToList();
         }
@@ -244,6 +242,37 @@ namespace clue_game6
             {
                 MessageBox.Show("로그 저장 실패: " + ex.Message);
             }
+        }
+
+        public string GetRoomNameByPosition(int x, int y)
+        {
+            Point pos = new Point(y, x); // Point(col, row)
+
+            Dictionary<Point, string> roomNames = new Dictionary<Point, string>
+            {
+                { new Point(4, 6), "주방" },
+
+                { new Point(8, 5), "무도회장" }, { new Point(15, 5), "무도회장" }, { new Point(9, 7), "무도회장" }, { new Point(14, 7), "무도회장" },
+
+                { new Point(5, 19), "라운지" },
+
+                { new Point(7, 12), "식당" }, { new Point(6, 15), "식당" },
+
+                { new Point(19, 5), "온실"},
+
+                { new Point(11, 18), "홀"}, { new Point(12, 18), "홀"}, { new Point(14, 20), "홀"},
+
+                { new Point(22, 12), "당구장" }, { new Point(18, 9), "당구장" },
+
+                { new Point(20, 24), "서재" }, { new Point(17, 16), "서재" },
+
+                { new Point(18, 21), "공부방" },
+            };
+
+            if (roomNames.ContainsKey(pos))
+                return roomNames[pos];
+            else
+                return "(알 수 없음)";
         }
 
     }

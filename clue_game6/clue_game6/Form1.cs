@@ -27,14 +27,12 @@ namespace clue_game6
         private int playerId;
         private PictureBox myPlayerBox;
         private Dictionary<int, PictureBox> playerBoxes = new Dictionary<int, PictureBox>();
-        //private Point[,] clue_map_point;
+
         private int[,] clue_map => gameState.clue_map;
 
         private Player[] playerList => gameState.Players;
         private Player player;
         List<Card> cardList = new List<Card>();
-
-        //int currentTurnPlayer = 0;
 
         List<string> mans = new List<string>();
         List<string> weapons = new List<string>();
@@ -132,6 +130,8 @@ namespace clue_game6
                 }
             }
             UpdateControlState();
+
+            this.ClientSize = new Size(800, 550); //창 키울 필요 없게
         }
 
         private void btnRoll_Click(object sender, EventArgs e)
@@ -206,35 +206,27 @@ namespace clue_game6
                 form.UpdatePlayerPositions();
                 form.UpdateControlState(); // 버튼 상태 동기화
             }
+
+            Console.WriteLine($"[디버그] Player {playerId + 1} 위치: ({player.x}, {player.y}), clue_map: {gameState.clue_map[player.x, player.y]}");
         }
-
-
 
         private void btnUp_Click(object sender, EventArgs e)
         {
-
             TryMove(-1, 0);
-
-
         }
         private void btnDown_Click(object sender, EventArgs e)
         {
-
             TryMove(1, 0);
-
         }
 
         private void btnRight_Click(object sender, EventArgs e)
         {
-
             TryMove(0, 1);
-
         }
 
         private void btnLeft_Click(object sender, EventArgs e)
         {
             TryMove(0, -1);
-
         }
 
         private void btnTurnEnd_Click(object sender, EventArgs e)
@@ -287,8 +279,6 @@ namespace clue_game6
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Filter = "Text Files (*.txt)|*.txt";
             saveFileDialog.FileName = $"ClueGameLog_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
-
-            pictureBox1.Image.Save("extracted_image.png", System.Drawing.Imaging.ImageFormat.Png);
 
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
