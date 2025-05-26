@@ -4,6 +4,8 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+using System.Windows.Forms;
 
 namespace clue_game6
 {
@@ -15,7 +17,6 @@ namespace clue_game6
         public int id;
 
         public List<Card> hands; //가지고 있는 카드
-        //wnwww
 
         public int x; //열
         public int y; //행
@@ -24,6 +25,8 @@ namespace clue_game6
         public bool isTurn = false;
         public bool isInRoom = false;
         public bool isFinalRoom = false;
+        public bool hasRolled = false; //주사위 굴림 여부
+        public bool hasSuggested = false; //추리 여부
         public string[] clueBox = { "", "", "" }; //추리 저장 배열
 
         public bool[] manBox = new bool[6];
@@ -54,7 +57,6 @@ namespace clue_game6
             get { return name; }
             set { name = value; }
         }
-
     }
 
     public class PlayerNoteData
@@ -64,12 +66,12 @@ namespace clue_game6
         public bool[] RoomChecks = new bool[9];    // 9개 방
     }
 
-        public class GameState
-        {
+    public class GameState
+    {
 
-            public int[,] clue_map = new int[,]
-            {
-                { 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1}, 
+        public int[,] clue_map = new int[,]
+        {
+                { 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
                 { 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1},
                 { 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1},
                 { 1, 1, 1, 4, 1, 1, 0, 0, 1, 1, 1, 4, 1, 1, 1, 1, 0, 0, 1, 1, 1, 4, 1, 1},
@@ -94,8 +96,20 @@ namespace clue_game6
                 { 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1},
                 { 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 4, 1, 1},
                 { 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1}
-            };
+        };
 
+        public List<Point> roomTiles = new List<Point> //문 좌표
+        {
+            new Point(8, 5), new Point(15, 5), new Point(4, 6), new Point(9, 7),
+            new Point(13, 12),new Point(18, 13),new Point(11, 14),new Point(22, 13),
+            new Point(20, 14),new Point(11, 15),new Point(17, 16),new Point(11, 18),new Point(12, 19),
+            new Point(18, 21), new Point(19,5)
+        };
+
+        public List<Point> finalRoomTiles = new List<Point> //최종추리방 문 좌표
+        {
+            new Point(12, 11), new Point(10, 13), new Point(12, 14), new Point(16, 12)
+        };
 
         public int TotalPlayers { get; set; }
         public Player[] Players { get; set; }
@@ -111,6 +125,8 @@ namespace clue_game6
         public int CurrentY { get; set; } = 0;
 
         public Dictionary<int, PlayerNoteData> PlayerNotes = new Dictionary<int, PlayerNoteData>();
+
+        public List<string> gameLog = new List<string>(); //로그 저장소
 
         public void initializeNote()
         {
@@ -158,7 +174,7 @@ namespace clue_game6
                 }
             }//카드 할당 오류 수정
 
-            
+
             Deck = Deck.OrderBy(x => rand.Next()).ToList();
         }
 
@@ -167,7 +183,7 @@ namespace clue_game6
             int playerCount = Players.Length;
             int cardCount = Deck.Count;
             int cardsPerPlayer = cardCount / playerCount; //나눠줘야 할 카드 수
-            int  restCard = cardCount % playerCount; //나눠줘야 할 카드 수
+            int restCard = cardCount % playerCount; //나눠줘야 할 카드 수
             for (int i = 0; i < playerCount; i++)
             {
                 Players[i].hands = new List<Card>();
@@ -206,7 +222,32 @@ namespace clue_game6
             }
         }
 
+        public void AddLog(string log)
+        {
+            gameLog.Add(log);
+
+            // 모든 폼의 로그 텍스트박스에 출력 추가
+            foreach (var form in PlayerChoose.AllPlayerForms)
+            {
+                form.textBox1.AppendText(log + "\r\n");
+            }
+        }
+
+        public void SaveLogToFile(string filePath)
+        {
+            try
+            {
+                File.WriteAllLines(filePath, gameLog);
+                MessageBox.Show($"로그가 저장되었습니다:\n{filePath}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("로그 저장 실패: " + ex.Message);
+            }
+        }
+
     }
 
 
 }
+
