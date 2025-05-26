@@ -24,6 +24,7 @@ namespace clue_game6
         private TcpClient client;
         private NetworkStream stream;
         private string myName;
+        private bool stopReceiving = false; //  控制是否继续读
 
 
 
@@ -47,12 +48,13 @@ namespace clue_game6
             t.Start();
         }
 
+
         private void ReceiveLoop()
         {
             byte[] buffer = new byte[8192];
             StringBuilder incomingData = new StringBuilder();
 
-            while (true)
+            while (!stopReceiving)
             {
                 int bytes = 0;
                 try
@@ -64,32 +66,31 @@ namespace clue_game6
                     break;
                 }
 
-                if (bytes == 0) break;
+                if (bytes == 0|| stopReceiving) break;
 
-                string msgChunk = Encoding.UTF8.GetString(buffer, 0, bytes);
-                incomingData.Append(msgChunk);
+                string chunk = Encoding.UTF8.GetString(buffer, 0, bytes);
+                incomingData.Append(chunk);
+                //Console.WriteLine("[watainClient Chunk] " + chunk);
 
-                string[] messages = incomingData.ToString().Split('\n');
-
-                incomingData.Clear();
-                if (!msgChunk.EndsWith("\n"))
+                while (true)
                 {
-                    incomingData.Append(messages[messages.Length - 1]);
-                    messages = messages.Take(messages.Length - 1).ToArray();
-                }
+                    string allData = incomingData.ToString();
+                    int newlineIndex = allData.IndexOf('\n');
+                    if (newlineIndex == -1) break;
 
-                foreach (string rawMsg in messages)
-                {
-                    if (string.IsNullOrWhiteSpace(rawMsg))
-                        continue;
-                    string msg = rawMsg.Trim();
-                    if (string.IsNullOrEmpty(msg)) continue;
-                    //GAME_START
+                    // 拿出完整一条消息
+                    string msg = allData.Substring(0, newlineIndex).Trim();
+                    incomingData.Remove(0, newlineIndex + 1);
+
+                    if (string.IsNullOrWhiteSpace(msg)) continue;
+
+                    // --------- 原来处理每条 msg 的代码保持不变 ---------
                     if (msg.StartsWith("GAME_START|"))
-                    {Console.WriteLine("收到原始 GAME_START 消息：" + msg);  // ✅ 添加这行
+                    {
+                        //Console.WriteLine("收到原始 GAME_START 消息：" + msg);
+                        stopReceiving = true;
                         try
                         {
-                            // 提取 JSON 并反序列化 GameState
                             string json = msg.Substring("GAME_START|".Length);
                             var serializer = new DataContractJsonSerializer(typeof(NetworkGameState));
                             using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(json)))
@@ -97,7 +98,6 @@ namespace clue_game6
                                 NetworkGameState netState = (NetworkGameState)serializer.ReadObject(ms);
                                 GameState state = ConvertToOriginalGameState(netState);
 
-                                // ✅ 客户端自己生成 clue_map_point，不依赖服务端字段
                                 state.clue_map_point = new Point[25, 24];
                                 for (int i = 0; i < 25; i++)
                                 {
@@ -107,10 +107,8 @@ namespace clue_game6
                                     }
                                 }
 
-                                // 找出自己在 Players 中的 id
                                 int myId = state.Players.FirstOrDefault(p => p.name == myName)?.id ?? 0;
 
-                                // 切换到游戏主界面
                                 this.Invoke(new Action(() =>
                                 {
                                     OpenGameForm(state, myId);
@@ -122,60 +120,54 @@ namespace clue_game6
                             MessageBox.Show("게임 시작 중 오류 발생: " + ex.Message, "에러", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
-                    //处理游戏回合返回
-                    else if (msg.StartsWith("TURN|"))
-                    {
-                        string turnStr = msg.Substring("TURN|".Length);
-                        if (int.TryParse(turnStr, out int turnIndex))
-                        {
-                            this.Invoke(new MethodInvoker(delegate
-                            {
-                                if (this.Owner is Form1 gameForm)
-                                {
-                                    gameForm.SetTurn(turnIndex);
-                                }
-                            }));
-                        }
-                    }
-
-                    else if (msg.StartsWith("MOVE|"))
-                    {
-                        string[] parts = msg.Split('|');
-                        if (parts.Length == 4 &&
-                            int.TryParse(parts[1], out int moveId) &&
-                            int.TryParse(parts[2], out int x) &&
-                            int.TryParse(parts[3], out int y))
-                        {
-
-                            this.Invoke(new MethodInvoker(delegate
-                            {
-                                if (this.Owner is Form1 gameForm)
-                                {
-                                    gameForm.MovePlayerExternally(moveId, x, y);
-                                }
-                            }));
-                            
-                        }
-                    }
-                    else if (msg.StartsWith("SUGGEST|"))
-                    {
-                        string suggestionText = msg.Substring("SUGGEST|".Length);
-                        this.Invoke(new MethodInvoker(() =>
-                        {
-                            if (Application.OpenForms["Form1"] is Form1 gameForm)
-                            {
-                                gameForm.ShowSuggestionMessage(suggestionText);
-                            }
-                        }));
-                    }
+                    //else if (msg.StartsWith("TURN|"))
+                    //{
+                    //    string turnStr = msg.Substring("TURN|".Length);
+                    //    if (int.TryParse(turnStr, out int turnIndex))
+                    //    {
+                    //        this.Invoke(new MethodInvoker(delegate
+                    //        {
+                    //            if (this.Owner is Form1 gameForm)
+                    //            {
+                    //                gameForm.SetTurn(turnIndex);
+                    //            }
+                    //        }));
+                    //    }
+                    //}
+                    //else if (msg.StartsWith("MOVE|"))
+                    //{
+                    //    string[] parts = msg.Split('|');
+                    //    if (parts.Length == 4 &&
+                    //        int.TryParse(parts[1], out int moveId) &&
+                    //        int.TryParse(parts[2], out int x) &&
+                    //        int.TryParse(parts[3], out int y))
+                    //    {
+                    //        this.Invoke(new MethodInvoker(delegate
+                    //        {
+                    //            if (this.Owner is Form1 gameForm)
+                    //            {
+                    //                gameForm.MovePlayerExternally(moveId, x, y);
+                    //            }
+                    //        }));
+                    //    }
+                    //}
+                    //else if (msg.StartsWith("SUGGEST|"))
+                    //{
+                    //    string suggestionText = msg.Substring("SUGGEST|".Length);
+                    //    this.Invoke(new MethodInvoker(() =>
+                    //    {
+                    //        if (Application.OpenForms["Form1"] is Form1 gameForm)
+                    //        {
+                    //            gameForm.ShowSuggestionMessage(suggestionText);
+                    //        }
+                    //    }));
+                    //}
                     else if (msg.StartsWith("PLAYER_COUNT|"))
                     {
                         string countStr = msg.Substring("PLAYER_COUNT|".Length);
-                        string capturedCountStr = countStr;
-
                         this.Invoke(new MethodInvoker(delegate
                         {
-                            UpdatePlayerCountLabel(capturedCountStr);
+                            UpdatePlayerCountLabel(countStr);
                         }));
                     }
                     else if (msg.StartsWith("PLAYER_LIST|"))
@@ -183,31 +175,30 @@ namespace clue_game6
                         string playerListStr = msg.Substring("PLAYER_LIST|".Length);
                         string[] players = playerListStr.Split(',');
 
-                        string[] capturedPlayers = players;
-
                         this.Invoke(new MethodInvoker(delegate
                         {
-                            UpdatePlayerList(capturedPlayers);
+                            UpdatePlayerList(players);
                         }));
                     }
                     else
                     {
                         if (!msg.Contains("|"))
                         {
-                            string capturedMsg = msg;
                             this.Invoke(new MethodInvoker(delegate
                             {
-                                ShowChatMessage(capturedMsg);
+                                ShowChatMessage(msg);
                             }));
                         }
                     }
                 }
             }
         }
+
         private void OpenGameForm(GameState state, int myId)
         {
             this.Hide();
             Form1 gameForm = new Form1(state, myId,stream);
+            gameForm.Owner = this;
             gameForm.Show();
         }
 

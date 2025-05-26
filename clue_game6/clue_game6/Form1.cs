@@ -76,6 +76,7 @@ namespace clue_game6
             Init(state, playerId);
             this.stream = stream;
             this.isNetworkMode = true;
+            PlayerChoose.AllPlayerForms.Add(this);
         }
         private void StartListening()
         {
@@ -85,79 +86,107 @@ namespace clue_game6
         }
         private void ReceiveLoop()
         {
+            //Console.WriteLine("[Client] ReceiveLoop 正在运行中...");
+            //byte[] buffer = new byte[1024];
+            //while (true)
+            //{
+            //    int bytes = stream.Read(buffer, 0, buffer.Length);
+            //    string msg = Encoding.UTF8.GetString(buffer, 0, bytes).Trim();
+            //    Console.WriteLine("[Client] 收到消息: " + msg);
+            //    string[] parts = msg.Split('|');
             byte[] buffer = new byte[1024];
+            StringBuilder incomingData = new StringBuilder();
+
             while (true)
             {
                 int bytes = stream.Read(buffer, 0, buffer.Length);
-                string msg = Encoding.UTF8.GetString(buffer, 0, bytes).Trim();
-
-                string[] parts = msg.Split('|');
-                if (parts[0] == "MOVE")
+                string chunk = Encoding.UTF8.GetString(buffer, 0, bytes);
+                incomingData.Append(chunk);
+                while (true)
                 {
-                    int id = int.Parse(parts[1]);
-                    int x = int.Parse(parts[2]);
-                    int y = int.Parse(parts[3]);
+                    string full = incomingData.ToString();
+                    int newlineIndex = full.IndexOf('\n');
+                    if (newlineIndex == -1) break;
 
-                    gameState.Players[id].x = x;
-                    gameState.Players[id].y = y;
-                    this.Invoke((MethodInvoker)(() =>
+                    string msg = full.Substring(0, newlineIndex).Trim(); // 拿出完整一条
+                    incomingData.Remove(0, newlineIndex + 1); // 移除已处理部分
+
+                    string[] parts = msg.Split('|');
+
+                    if (parts[0] == "MOVE")
                     {
-                        foreach (var form in PlayerChoose.AllPlayerForms)
+                        int id = int.Parse(parts[1]);
+                        int x = int.Parse(parts[2]);
+                        int y = int.Parse(parts[3]);
+
+                        gameState.Players[id].x = x;
+                        gameState.Players[id].y = y;
+                        this.Invoke((MethodInvoker)(() =>
                         {
-                            form.UpdatePlayerPositions();
+                            foreach (var form in PlayerChoose.AllPlayerForms)
+                            {
+                                form.UpdatePlayerPositions();
+                            }
+                        }));
+                    }
+                    else if (parts[0] == "TURN")
+                    {
+                        int index = int.Parse(parts[1]);
+                        //Invoke(new Action(() => SetTurn(index)));
+                      //  Console.WriteLine($"[Client] TURN 메시지 수신됨. 내 ID: {playerId}, 현재 턴: {index}");
+                        this.Invoke((MethodInvoker)(() =>
+                        {
+                            SetTurn(index);
+                        }));
+
+                    }
+                    //else if (parts[0] == "END_TURN")
+                    // {
+                    //     int nextTurn = (gameState.CurrentTurn + 1) % gameState.TotalPlayers;
+                    //      Invoke(new Action(() => SetTurn(nextTurn)));
+                    // }
+                    else if (parts[0] == "SUGGEST_REPLY")
+                    {
+                        int from = int.Parse(parts[1]);
+                        int to = int.Parse(parts[2]);
+                        string type = parts[3];
+                        string name = parts[4];
+
+                        if (playerId == to)
+                        {
+                            textBox1.AppendText($"플레이어 {from + 1} 이(가) 카드를 보여줬습니다: <{type}> {name}\r\n");
                         }
-                    }));
-                }
-                else if (parts[0] == "TURN")
-                {
-                    int index = int.Parse(parts[1]);
-                    Invoke(new Action(() => SetTurn(index)));
-                }
-                else if (parts[0] == "END_TURN")
-                {
-                    int nextTurn = (gameState.CurrentTurn + 1) % gameState.TotalPlayers;
-                    Invoke(new Action(() => SetTurn(nextTurn)));
-                }
-                else if(parts[0] == "SUGGEST_REPLY")
-                {
-                    int from = int.Parse(parts[1]);
-                    int to = int.Parse(parts[2]);
-                    string type = parts[3];
-                    string name = parts[4];
-
-                    if (playerId == to)
-                    {
-                        textBox1.AppendText($"플레이어 {from + 1} 이(가) 카드를 보여줬습니다: <{type}> {name}\r\n");
+                        else
+                        {
+                            textBox1.AppendText($"플레이어 {from + 1} 이(가) 플레이어 {to + 1} 에게 카드를 보여줬습니다.\r\n");
+                        }
                     }
-                    else
+                    else if (parts[0] == "FINAL_SUGGEST" && parts.Length == 5)
                     {
-                        textBox1.AppendText($"플레이어 {from + 1} 이(가) 플레이어 {to + 1} 에게 카드를 보여줬습니다.\r\n");
-                    }
-                }
-                else if (parts[0] == "FINAL_SUGGEST" && parts.Length == 5)
-                {
-                    int who = int.Parse(parts[1]);
-                    string man = parts[2];
-                    string weapon = parts[3];
-                    string room = parts[4];
+                        int who = int.Parse(parts[1]);
+                        string man = parts[2];
+                        string weapon = parts[3];
+                        string room = parts[4];
 
-                    string log = $"[최종추리] Player{who + 1}: {man}가 {room}에서 {weapon}으로 범행";
-                    Invoke(new Action(() =>
-                    {
-                        textBox1.AppendText(log + "\r\n");
-                    }));
+                        string log = $"[최종추리] Player{who + 1}: {man}가 {room}에서 {weapon}으로 범행";
+                        Invoke(new Action(() =>
+                        {
+                            textBox1.AppendText(log + "\r\n");
+                        }));
+                    }
                 }
             }
         }
         /// ///////////////////
         private void UpdateControlState()
         {
+
             bool isMyTurn = gameState.CurrentTurn == playerId;
             btnRoll.Enabled = isMyTurn;
             btnTurnEnd.Enabled = isMyTurn;
         
-            btnSug.Enabled = isMyTurn && player.isInRoom;
-            btnFinalSug.Enabled = isMyTurn && player.isFinalRoom;
+           // btnSug.Enabled = isMyTurn && player.isInRoom;
+           // btnFinalSug.Enabled = isMyTurn && player.isFinalRoom;
 
             btnFinalSug.Enabled = false;
             btnSug.Enabled = false;
@@ -313,11 +342,11 @@ namespace clue_game6
             {
                 byte[] data = Encoding.UTF8.GetBytes(msg + "\n");
                 stream.Write(data, 0, data.Length);
-                Console.WriteLine($"[CLIENT] 📤 Sent Message: {msg}");
+                
             }
             else
             {
-                Console.WriteLine($"[CLIENT] ❌ 无法发送消息：stream 为 null 或已关闭！");
+                Console.WriteLine($"[CLIENT] ❌ ：stream  null ！");
             }
         }
         //gina
@@ -348,7 +377,7 @@ namespace clue_game6
             {
                 btnRoll.Enabled = true;
                 btnTurnEnd.Enabled = false;
-                MessageBox.Show("당신의 턴입니다!");
+                MessageBox.Show("당신의 턴입니다! (from SetTurn)");
             }
             else
             {
@@ -391,7 +420,11 @@ namespace clue_game6
             if (isNetworkMode)
             {
                 if (stream != null && stream.CanWrite)
+                {
+                   
+                    Thread.Sleep(50); 
                     SendMessage($"END_TURN|{playerId}");
+                }
             }
             else
             {
@@ -412,9 +445,9 @@ namespace clue_game6
 
         private void btnSug_Click(object sender, EventArgs e)
         {
-            // Gina联机模式
+            //  Gina온라인 모드
             if (isNetworkMode)
-                suggest = new Form3(gameState, player, 1, playerId, true, stream); // 联机构造
+                suggest = new Form3(gameState, player, 1, playerId, true, stream); //  Gina온라인 모드
             else
                 suggest = new Form3(gameState, player, 1, playerId);
             suggest.Show();
@@ -422,7 +455,7 @@ namespace clue_game6
 
         private void btnFinalSug_Click(object sender, EventArgs e)
         {
-            // Gina联机模式
+            //  Gina온라인 모드
             if (isNetworkMode)
                 suggest = new Form3(gameState, player, 2, playerId, true, stream);
             else
@@ -432,7 +465,7 @@ namespace clue_game6
 
         private void button1_Click(object sender, EventArgs e)
         {
-            // Gina联机模式
+            //  Gina온라인 모드
             if (isNetworkMode)
                 suggest = new Form3(gameState, player, 3, playerId, true, stream);
             else
