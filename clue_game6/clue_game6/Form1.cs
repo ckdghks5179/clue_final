@@ -67,7 +67,9 @@ namespace clue_game6
 
             btnFinalSug.Enabled = isMyTurn && player.isFinalRoom;
             btnSug.Enabled = isMyTurn && player.isInRoom && !player.hasSuggested;
-            btnSecPass.Enabled = gameState.secretPassPoints.ContainsKey(new Point(player.y, player.x));
+            btnSecPass.Enabled = isMyTurn &&
+                     gameState.secretPassPoints.ContainsKey(new Point(player.y, player.x)) &&
+                     !player.usedSecretPass;
             /* btnUp.Enabled = isMyTurn;
              btnDown.Enabled = isMyTurn;
              btnLeft.Enabled = isMyTurn;
@@ -236,6 +238,7 @@ namespace clue_game6
             lbRemain.Text = "0";
             player.hasRolled = false;
             player.hasSuggested = false;
+            player.usedSecretPass = false;
 
             gameState.AdvanceTurn();
             foreach (var form in PlayerChoose.AllPlayerForms)
@@ -289,6 +292,12 @@ namespace clue_game6
 
         private void btnSecPass_Click(object sender, EventArgs e) //비밀 통로 이동
         {
+            if (player.usedSecretPass)
+            {
+                MessageBox.Show("이 턴에는 이미 비밀 통로를 사용했습니다.");
+                return;
+            }
+
             Point current = new Point(player.y, player.x);
             string currentRoom = gameState.GetRoomNameByPosition(player.x, player.y);
 
@@ -307,6 +316,7 @@ namespace clue_game6
 
                 player.hasRolled = true; // 비밀 통로 이동 후 주사위 굴리기 불가능
                 btnRoll.Enabled = false;
+                player.usedSecretPass = true;
 
                 foreach (var form in PlayerChoose.AllPlayerForms)
                 {

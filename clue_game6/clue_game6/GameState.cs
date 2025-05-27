@@ -25,6 +25,7 @@ namespace clue_game6
         public bool isFinalRoom = false;
         public bool hasRolled = false; //주사위 굴림 여부
         public bool hasSuggested = false; //추리 여부
+        public bool usedSecretPass = false; //비밀통로 사용 여부
         public string[] clueBox = { "", "", "" }; //추리 저장 배열
 
         public bool[] manBox = new bool[6];
