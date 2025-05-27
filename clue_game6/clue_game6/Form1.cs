@@ -67,6 +67,7 @@ namespace clue_game6
 
             btnFinalSug.Enabled = isMyTurn && player.isFinalRoom;
             btnSug.Enabled = isMyTurn && player.isInRoom && !player.hasSuggested;
+            btnSecPass.Enabled = gameState.secretPassPoints.ContainsKey(new Point(player.y, player.x));
             /* btnUp.Enabled = isMyTurn;
              btnDown.Enabled = isMyTurn;
              btnLeft.Enabled = isMyTurn;
@@ -283,6 +284,39 @@ namespace clue_game6
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
                 gameState.SaveLogToFile(saveFileDialog.FileName);
+            }
+        }
+
+        private void btnSecPass_Click(object sender, EventArgs e) //비밀 통로 이동
+        {
+            Point current = new Point(player.y, player.x);
+            string currentRoom = gameState.GetRoomNameByPosition(player.x, player.y);
+
+            if (gameState.secretPassPoints.ContainsKey(current))
+            {
+                Point destination = gameState.secretPassPoints[current];
+                player.x = destination.Y;
+                player.y = destination.X;
+                string destiRoom = gameState.GetRoomNameByPosition(player.x, player.y);
+                playerBoxes[playerId].Location = gameState.clue_map_point[player.x, player.y];
+
+                gameState.AddLog($"Player {playerId + 1}가 비밀 통로를 통해 {currentRoom}에서 {destiRoom}으로 이동했습니다.");
+                lbRemain.Text = "0"; // 비밀 통로 이동 후 그 턴에 다른곳으로 이동 불가능
+                player.isInRoom = true;
+                player.isFinalRoom = gameState.clue_map[player.x, player.y] == 5;
+
+                player.hasRolled = true; // 비밀 통로 이동 후 주사위 굴리기 불가능
+                btnRoll.Enabled = false;
+
+                foreach (var form in PlayerChoose.AllPlayerForms)
+                {
+                    form.UpdatePlayerPositions();
+                }
+                UpdateControlState();
+            }
+            else
+            {
+                MessageBox.Show("현재 방에는 비밀 통로가 없습니다.");
             }
         }
     }

@@ -47,6 +47,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.btnSaveLog = new System.Windows.Forms.Button();
+            this.btnSecPass = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -251,11 +252,22 @@
             this.btnSaveLog.UseVisualStyleBackColor = true;
             this.btnSaveLog.Click += new System.EventHandler(this.btnSaveLog_Click);
             // 
+            // btnSecPass
+            // 
+            this.btnSecPass.Location = new System.Drawing.Point(959, 243);
+            this.btnSecPass.Name = "btnSecPass";
+            this.btnSecPass.Size = new System.Drawing.Size(133, 52);
+            this.btnSecPass.TabIndex = 22;
+            this.btnSecPass.Text = "비밀 통로";
+            this.btnSecPass.UseVisualStyleBackColor = true;
+            this.btnSecPass.Click += new System.EventHandler(this.btnSecPass_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(13F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1474, 1129);
+            this.Controls.Add(this.btnSecPass);
             this.Controls.Add(this.btnSaveLog);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -306,6 +318,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button btnSaveLog;
+        private System.Windows.Forms.Button btnSecPass;
     }
 }
 

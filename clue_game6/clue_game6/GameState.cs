@@ -109,6 +109,22 @@ namespace clue_game6
             new Point(12, 10), new Point(10, 13), new Point(14, 13), new Point(12, 16)
         };
 
+        public Dictionary<string, string> secretPass = new Dictionary<string, string>
+        {
+            {"주방", "공부방" },
+            {"공부방", "주방" },
+            {"라운지", "온실" },
+            {"온실", "라운지" }
+        };
+
+        public Dictionary<Point, Point> secretPassPoints = new Dictionary<Point, Point>
+        {
+            { new Point(4, 6), new Point(18, 21) }, // 주방 -> 공부방
+            { new Point(18, 21), new Point(4, 6) }, // 공부방 -> 주방
+            { new Point(5, 19), new Point(19, 5) }, // 라운지 -> 온실
+            { new Point(19, 5), new Point(5, 19) } // 온실 -> 라운지
+        };
+
         public int TotalPlayers { get; set; }
         public Player[] Players { get; set; }
 
@@ -273,6 +289,17 @@ namespace clue_game6
                 return roomNames[pos];
             else
                 return "(알 수 없음)";
+        }
+
+        public bool GetSecretPass(Point currentPos, out Point targetPos)
+        {
+            if (secretPassPoints.ContainsKey(currentPos))
+            {
+                targetPos = secretPassPoints[currentPos];
+                return true;
+            }
+            targetPos = Point.Empty;
+            return false;
         }
 
     }
