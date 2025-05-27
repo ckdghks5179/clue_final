@@ -27,14 +27,12 @@ namespace clue_game6
         private int playerId;
         private PictureBox myPlayerBox;
         private Dictionary<int, PictureBox> playerBoxes = new Dictionary<int, PictureBox>();
-        //private Point[,] clue_map_point;
+
         private int[,] clue_map => gameState.clue_map;
 
         private Player[] playerList => gameState.Players;
         private Player player;
         List<Card> cardList = new List<Card>();
-
-        //int currentTurnPlayer = 0;
 
         List<string> mans = new List<string>();
         List<string> weapons = new List<string>();
@@ -69,6 +67,9 @@ namespace clue_game6
 
             btnFinalSug.Enabled = isMyTurn && player.isFinalRoom;
             btnSug.Enabled = isMyTurn && player.isInRoom && !player.hasSuggested;
+            btnSecPass.Enabled = isMyTurn &&
+                     gameState.secretPassPoints.ContainsKey(new Point(player.y, player.x)) &&
+                     !player.usedSecretPass;
             /* btnUp.Enabled = isMyTurn;
              btnDown.Enabled = isMyTurn;
              btnLeft.Enabled = isMyTurn;
@@ -132,6 +133,8 @@ namespace clue_game6
                 }
             }
             UpdateControlState();
+
+            this.ClientSize = new Size(800, 550); //창 키울 필요 없게
         }
 
         private void btnRoll_Click(object sender, EventArgs e)
@@ -206,35 +209,27 @@ namespace clue_game6
                 form.UpdatePlayerPositions();
                 form.UpdateControlState(); // 버튼 상태 동기화
             }
+
+            Console.WriteLine($"[디버그] Player {playerId + 1} 위치: ({player.x}, {player.y}), clue_map: {gameState.clue_map[player.x, player.y]}");
         }
-
-
 
         private void btnUp_Click(object sender, EventArgs e)
         {
-
             TryMove(-1, 0);
-
-
         }
         private void btnDown_Click(object sender, EventArgs e)
         {
-
             TryMove(1, 0);
-
         }
 
         private void btnRight_Click(object sender, EventArgs e)
         {
-
             TryMove(0, 1);
-
         }
 
         private void btnLeft_Click(object sender, EventArgs e)
         {
             TryMove(0, -1);
-
         }
 
         private void btnTurnEnd_Click(object sender, EventArgs e)
@@ -243,6 +238,7 @@ namespace clue_game6
             lbRemain.Text = "0";
             player.hasRolled = false;
             player.hasSuggested = false;
+            player.usedSecretPass = false;
 
             gameState.AdvanceTurn();
             foreach (var form in PlayerChoose.AllPlayerForms)
@@ -288,11 +284,49 @@ namespace clue_game6
             saveFileDialog.Filter = "Text Files (*.txt)|*.txt";
             saveFileDialog.FileName = $"ClueGameLog_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
 
-            pictureBox1.Image.Save("extracted_image.png", System.Drawing.Imaging.ImageFormat.Png);
-
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
                 gameState.SaveLogToFile(saveFileDialog.FileName);
+            }
+        }
+
+        private void btnSecPass_Click(object sender, EventArgs e) //비밀 통로 이동
+        {
+            if (player.usedSecretPass)
+            {
+                MessageBox.Show("이 턴에는 이미 비밀 통로를 사용했습니다.");
+                return;
+            }
+
+            Point current = new Point(player.y, player.x);
+            string currentRoom = gameState.GetRoomNameByPosition(player.x, player.y);
+
+            if (gameState.secretPassPoints.ContainsKey(current))
+            {
+                Point destination = gameState.secretPassPoints[current];
+                player.x = destination.Y;
+                player.y = destination.X;
+                string destiRoom = gameState.GetRoomNameByPosition(player.x, player.y);
+                playerBoxes[playerId].Location = gameState.clue_map_point[player.x, player.y];
+
+                gameState.AddLog($"Player {playerId + 1}가 비밀 통로를 통해 {currentRoom}에서 {destiRoom}으로 이동했습니다.");
+                lbRemain.Text = "0"; // 비밀 통로 이동 후 그 턴에 다른곳으로 이동 불가능
+                player.isInRoom = true;
+                player.isFinalRoom = gameState.clue_map[player.x, player.y] == 5;
+
+                player.hasRolled = true; // 비밀 통로 이동 후 주사위 굴리기 불가능
+                btnRoll.Enabled = false;
+                player.usedSecretPass = true;
+
+                foreach (var form in PlayerChoose.AllPlayerForms)
+                {
+                    form.UpdatePlayerPositions();
+                }
+                UpdateControlState();
+            }
+            else
+            {
+                MessageBox.Show("현재 방에는 비밀 통로가 없습니다.");
             }
         }
     }

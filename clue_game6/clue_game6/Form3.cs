@@ -17,6 +17,7 @@ namespace clue_game6
         Player player;
         int choose;
         int id;
+
         public Form3(GameState G,Player p, int i, int id_num)
         {
             InitializeComponent();
@@ -24,8 +25,8 @@ namespace clue_game6
             choose = i;
             gameState = G;
             id = id_num;
-            
 
+            this.Load += Form3_Load; // Load 이벤트 연결
         }  
 
         public void SelectedIndexChanged(object sender, EventArgs e)
@@ -112,7 +113,7 @@ namespace clue_game6
                 {
                     gameState.AddLog($"Player {player.id + 1}가 정답을 맞춰서 게임에서 승리했습니다!");
                     MessageBox.Show("정답입니다! 게임에서 승리했습니다!");
-                    Application.Exit(); // 또는 승리 화면
+                    //Application.Exit();
                 }
                 else
                 {
@@ -153,6 +154,17 @@ namespace clue_game6
         private void Form3_Load(object sender, EventArgs e)
         {
             button1.Enabled = false;
+
+            if (choose == 1)
+            {
+                roomBox.Enabled = false;
+
+                // 현재 플레이어가 위치한 좌표에서 방 이름 자동 설정
+                string roomName = gameState.GetRoomNameByPosition(player.x, player.y);
+                roomBox.Items.Clear();
+                roomBox.Items.Add(roomName);
+                roomBox.SelectedIndex = 0;
+            }
         }
     }
     }
