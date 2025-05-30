@@ -534,6 +534,11 @@ namespace clue_game6
                 gameState.SaveLogToFile(saveFileDialog.FileName);
             }
         }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
 

@@ -84,13 +84,14 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Image = global::clue_game6.Properties.Resources.캡처20;
+            this.pictureBox1.Image = global::clue_game6.Properties.Resources.캡처201;
             this.pictureBox1.Location = new System.Drawing.Point(13, 12);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(888, 800);
             this.pictureBox1.TabIndex = 4;
             this.pictureBox1.TabStop = false;
+            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
             // 
             // lbRemain
             // 
