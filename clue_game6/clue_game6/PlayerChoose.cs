@@ -19,7 +19,7 @@ namespace clue_game6
             InitializeComponent();
         }
 
-
+        
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -41,6 +41,7 @@ namespace clue_game6
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             button1.Enabled = true;
+            btnOnline.Enabled = true; // 온라인 모드
         }
 
         public void StartGame(int playerCount)
@@ -94,6 +95,20 @@ namespace clue_game6
 
             // 4. Dialog 종료
             this.Close();  // 또는 this.DialogResult = DialogResult.OK; if needed
+
+        }
+        //온라인 모드gina
+        public static Form MainFormToRun = null;
+        private void btnOnline_Click(object sender, EventArgs e)
+        {
+            int playerCount = int.Parse(comboBox1.Text);
+            LoginForm lgf = new LoginForm(playerCount);
+            if (lgf.ShowDialog() == DialogResult.OK)
+            {
+                // LoginForm 中创建了 WaitingForm 并 Show() 了，但我们需要把它交给主程序托管
+                MainFormToRun = lgf.WaitingFormInstance;  // 暴露 WaitingForm 对象
+                this.Close();
+            }
 
         }
     }
