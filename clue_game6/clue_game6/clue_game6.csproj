@@ -87,7 +87,7 @@
     </Compile>
     <Compile Include="WaitingForm .Designer.cs">
       <DependentUpon>WaitingForm .cs</DependentUpon>
-
+	</Compile>
     <Compile Include="SelectCardForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -123,7 +123,7 @@
 
     <EmbeddedResource Include="WaitingForm .resx">
       <DependentUpon>WaitingForm .cs</DependentUpon>
-
+	</EmbeddedResource>
     <EmbeddedResource Include="SelectCardForm.resx">
       <DependentUpon>SelectCardForm.cs</DependentUpon>
 

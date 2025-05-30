@@ -252,6 +252,8 @@ namespace clue_game6
                 }
             }
             UpdateControlState();
+            this.ClientSize = new Size(800, 550); //창 키울 필요 없게
+
             // Gina온라인 모드
             if (isNetworkMode) StartListening();
         }
@@ -334,13 +336,13 @@ namespace clue_game6
             // 이동 횟수 감소
             lbRemain.Text = (int.Parse(lbRemain.Text) - 1).ToString();
 
-            // 위치 및 버튼 상태 갱신
-            foreach (var form in PlayerChoose.AllPlayerForms)
-            {
-                form.UpdatePlayerPositions();
-                form.UpdateControlState(); // 버튼 상태 동기화
+                // 위치 및 버튼 상태 갱신
+                foreach (var playerForm in PlayerChoose.AllPlayerForms)
+                {
+                    playerForm.UpdatePlayerPositions();
+                    playerForm.UpdateControlState();
+                }
 
-            }
             }
               //gina온라인 모드   
             if (isNetworkMode && stream != null && stream.CanWrite)
@@ -448,7 +450,7 @@ namespace clue_game6
             else
             {
                
-            //btnRoll.Enabled = true;
+            btnRoll.Enabled = true;
             lbRemain.Text = "0";
             player.hasRolled = false;
             player.hasSuggested = false;
