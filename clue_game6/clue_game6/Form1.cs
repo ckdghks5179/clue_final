@@ -27,10 +27,10 @@ namespace clue_game6
     {
         Form2 notePad;
         Form3 suggest;
-        //온라인 모드
-        private NetworkStream stream;       // 联机使用的网络流
-        private bool isNetworkMode = false; // 区分是否为联机模式
-        //온라인 모드
+        // 네트워크 스트림 및 온라인 여부 플래그gina
+        private NetworkStream stream;      // 서버와의 통신에 사용됨
+        private bool isNetworkMode = false; // 온라인 모드 여부
+        // 게임 상태 및 현재 플레이어 정보
         private GameState gameState;
         private int playerId;
         private PictureBox myPlayerBox;
@@ -70,7 +70,7 @@ namespace clue_game6
             this.isNetworkMode = false;//온라인 모드가 아님
         }
         /// <summary>
-        /// 온라인 모드
+        /// 온라인 모드 생성자
         /// </summary>
         public Form1(GameState state, int playerId, NetworkStream stream)
         {
@@ -78,24 +78,18 @@ namespace clue_game6
             Init(state, playerId);
             this.stream = stream;
             this.isNetworkMode = true;
-            PlayerChoose.AllPlayerForms.Add(this);
+            PlayerChoose.AllPlayerForms.Add(this); // 모든 플레이어 폼 리스트에 등록
         }
+        // 서버 메시지 수신 쓰레드 시작
         private void StartListening()
         {
             Thread t = new Thread(new ThreadStart(ReceiveLoop));
             t.IsBackground = true;
             t.Start();
         }
+        // 서버로부터 메시지를 계속 수신하여 처리
         private void ReceiveLoop()
         {
-            //Console.WriteLine("[Client] ReceiveLoop 正在运行中...");
-            //byte[] buffer = new byte[1024];
-            //while (true)
-            //{
-            //    int bytes = stream.Read(buffer, 0, buffer.Length);
-            //    string msg = Encoding.UTF8.GetString(buffer, 0, bytes).Trim();
-            //    Console.WriteLine("[Client] 收到消息: " + msg);
-            //    string[] parts = msg.Split('|');
             byte[] buffer = new byte[1024];
             StringBuilder incomingData = new StringBuilder();
 
@@ -110,13 +104,14 @@ namespace clue_game6
                     int newlineIndex = full.IndexOf('\n');
                     if (newlineIndex == -1) break;
 
-                    string msg = full.Substring(0, newlineIndex).Trim(); // 拿出完整一条
-                    incomingData.Remove(0, newlineIndex + 1); // 移除已处理部分
+                    string msg = full.Substring(0, newlineIndex).Trim(); 
+                    incomingData.Remove(0, newlineIndex + 1); 
 
                     string[] parts = msg.Split('|');
 
                     if (parts[0] == "MOVE")
                     {
+                        // 이동 메시지 수신 처리
                         int id = int.Parse(parts[1]);
                         int x = int.Parse(parts[2]);
                         int y = int.Parse(parts[3]);
@@ -127,28 +122,23 @@ namespace clue_game6
                         {
                             foreach (var form in PlayerChoose.AllPlayerForms)
                             {
-                                form.UpdatePlayerPositions();
+                                form.UpdatePlayerPositions();// UI 동기화
                             }
                         }));
                     }
                     else if (parts[0] == "TURN")
                     {
+                        // 턴 전달 처리
                         int index = int.Parse(parts[1]);
-                        //Invoke(new Action(() => SetTurn(index)));
-                      //  Console.WriteLine($"[Client] TURN 메시지 수신됨. 내 ID: {playerId}, 현재 턴: {index}");
-                        this.Invoke((MethodInvoker)(() =>
+                       this.Invoke((MethodInvoker)(() =>
                         {
                             SetTurn(index);
                         }));
 
                     }
-                    //else if (parts[0] == "END_TURN")
-                    // {
-                    //     int nextTurn = (gameState.CurrentTurn + 1) % gameState.TotalPlayers;
-                    //      Invoke(new Action(() => SetTurn(nextTurn)));
-                    // }
                     else if (parts[0] == "SUGGEST_REPLY")
                     {
+                        // 추리 응답 처리 (카드 공개)
                         int from = int.Parse(parts[1]);
                         int to = int.Parse(parts[2]);
                         string type = parts[3];
@@ -165,6 +155,7 @@ namespace clue_game6
                     }
                     else if (parts[0] == "FINAL_SUGGEST" && parts.Length == 5)
                     {
+                        // 최종 추리 메시지 출력
                         int who = int.Parse(parts[1]);
                         string man = parts[2];
                         string weapon = parts[3];
@@ -390,14 +381,14 @@ namespace clue_game6
 
             //UpdateControlState();
             gameState.CurrentTurn = index;
-            lbRemain.Text = "0"; // ✅ 清空步数防止残留
+            lbRemain.Text = "0"; 
 
 
             if (playerId == index)
             {
                 btnRoll.Enabled = true;
                 btnTurnEnd.Enabled = false;
-                MessageBox.Show("당신의 턴입니다! (from SetTurn)");
+                MessageBox.Show("당신의 턴입니다! ");
             }
             else
             {
