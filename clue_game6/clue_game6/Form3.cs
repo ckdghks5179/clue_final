@@ -14,7 +14,7 @@ namespace clue_game6
 {
     public partial class Form3 : Form
     {
-        //gina
+        //gina- 네트워크 스트림 관련 변수
         private NetworkStream stream;
         private bool isNetworkMode = false;
         //gina
@@ -30,15 +30,15 @@ namespace clue_game6
             gameState = G;
             id = id_num;
             }
-        ////gina
+        ////gina네트워크 모드 생성자 (오버로드)
         public Form3(GameState G, Player p, int i, int id_num, bool isNetMode, NetworkStream netStream)
-    : this(G, p, i, id_num) // 调用原来的构造函数，保留单机逻辑
+    : this(G, p, i, id_num) 
         {
             isNetworkMode = isNetMode;
             stream = netStream;
         }
 
-
+        // 콤보박스 선택 시 버튼 활성화
         public void SelectedIndexChanged(object sender, EventArgs e)
         {
             if (manBox.SelectedIndex != -1 && weaponBox.SelectedIndex != -1 && roomBox.SelectedIndex != -1)
@@ -50,7 +50,7 @@ namespace clue_game6
                 button1.Enabled = false;
             }
         }
-
+        // [확인] 버튼 클릭 이벤트
         private void button1_Click(object sender, EventArgs e)
         {
             //if (choose == 1)
@@ -122,6 +122,7 @@ namespace clue_game6
 
             //    this.Close();
             //}
+            // 일반 추리
             if (choose == 1)
             {
                 // 1. 추리 로그 전체 플레이어에 출력
@@ -184,7 +185,7 @@ namespace clue_game6
                             gameState.AddLog($"→ Player {other.id + 1}가 반박했다.");
                             MessageBox.Show($"Player {other.id + 1}가 '{revealed.name}' 카드를 보여주었습니다.");
 
-                            // ✅ 联机模式下同步展示信息
+                            // 온라인 모드에서 정보의 동기식 표시
                             if (isNetworkMode && stream != null && stream.CanWrite)
                             {
                                 string suggestMsg = $"SUGGEST|{guessLog}\n";
@@ -201,7 +202,7 @@ namespace clue_game6
                             }
                         }
                         BroadcastControlUpdate();
-                        // 在线与否都关闭窗口
+                        
                         this.Close();
                         return;
                     }
@@ -213,7 +214,7 @@ namespace clue_game6
                 gameState.AddLog("→ 아무도 반박하지 못했다.");
                 MessageBox.Show("아무도 반박하지 못했습니다.");
 
-                // ✅ 最后补上普通猜想广播（所有人都能看到）
+                //  마지막으로 일반 추측 방송을 추가합니다(모두가 볼 수 있음)
                 if (isNetworkMode && stream != null && stream.CanWrite)
                 {
                     string suggestMsg = $"SUGGEST|{guessLog}\n";
@@ -222,14 +223,15 @@ namespace clue_game6
                 }
                 BroadcastControlUpdate();
                 this.Close();
-            }
+            }      
+            // 최종 추리
             else if (choose == 2)
             {
                 string finalLog = $"Player {player.id + 1}의 최종 추리: {manBox.Text}, {weaponBox.Text}, {roomBox.Text}";
                 gameState.AddLog(finalLog);
                 if (isNetworkMode && stream != null && stream.CanWrite)
                 {
-                    // 🔄 联机模式：发送给服务器判断胜负
+                    // 온라인 모드: 서버로 전송하여 우승자를 결정합니다.
                     string msg = $"FINAL_SUGGEST|{id}|{manBox.Text}|{weaponBox.Text}|{roomBox.Text}\n";
                     byte[] data = Encoding.UTF8.GetBytes(msg);
                     stream.Write(data, 0, data.Length);
@@ -260,8 +262,8 @@ namespace clue_game6
             }
 
 
-
-            else if(choose ==3)
+            // 반박 카드 선택
+            else if (choose ==3)
             {
                 //for(int i =0;i<player.hands.Count();i++)
                 //{
@@ -305,7 +307,7 @@ namespace clue_game6
 
                         if (selectedCardName != null)
                         {
-                            // ✅ 单机模式：写入对应窗口 textBox1
+                            
                             if (!isNetworkMode)
                             {
                                 if (gameState.CurrentTurn < PlayerChoose.AllPlayerForms.Count)
@@ -316,8 +318,8 @@ namespace clue_game6
                             }
                             else
                             {
-                                // ✅ 联机模式：向服务器发送 SUGGEST_REPLY 指令（由服务器再分发）
-                                if (stream != null && stream.CanWrite)
+                            //  온라인 모드: 서버에 SUGGEST_REPLY 명령을 보냅니다(서버에서 재배포)
+                            if (stream != null && stream.CanWrite)
                                 {
                                     string replyMsg = $"SUGGEST_REPLY|{id}|{gameState.CurrentTurn}|{selectedCardType}|{selectedCardName}\n";
                                     byte[] data = Encoding.UTF8.GetBytes(replyMsg);
@@ -333,6 +335,8 @@ namespace clue_game6
 
             }
         }
+
+        // UI 갱신 신호 전송
         private void BroadcastControlUpdate()
         {
             if (isNetworkMode && stream != null && stream.CanWrite)
