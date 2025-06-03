@@ -93,7 +93,7 @@ namespace clue_game6
             byte[] buffer = new byte[1024];
             StringBuilder incomingData = new StringBuilder();
 
-            while (true)
+            while (true) 
             {
                 int bytes = stream.Read(buffer, 0, buffer.Length);
                 string chunk = Encoding.UTF8.GetString(buffer, 0, bytes);
@@ -109,20 +109,40 @@ namespace clue_game6
 
                     string[] parts = msg.Split('|');
 
+                    //if (parts[0] == "MOVE")
+                    //{
+                    //    // 이동 메시지 수신 처리
+                    //    int id = int.Parse(parts[1]);
+                    //    int x = int.Parse(parts[2]);
+                    //    int y = int.Parse(parts[3]);
+
+                    //    gameState.Players[id].x = x;
+                    //    gameState.Players[id].y = y;
+                    //    this.Invoke((MethodInvoker)(() =>
+                    //    {
+                    //        foreach (var form in PlayerChoose.AllPlayerForms)
+                    //        {
+                    //            form.UpdatePlayerPositions();// UI 동기화
+                    //        }
+                    //    }));
+                    //}
                     if (parts[0] == "MOVE")
                     {
-                        // 이동 메시지 수신 처리
                         int id = int.Parse(parts[1]);
                         int x = int.Parse(parts[2]);
                         int y = int.Parse(parts[3]);
 
-                        gameState.Players[id].x = x;
-                        gameState.Players[id].y = y;
+                        foreach (var form in PlayerChoose.AllPlayerForms)
+                        {
+                            form.gameState.Players[id].x = x;
+                            form.gameState.Players[id].y = y;
+                        }
+
                         this.Invoke((MethodInvoker)(() =>
                         {
                             foreach (var form in PlayerChoose.AllPlayerForms)
                             {
-                                form.UpdatePlayerPositions();// UI 동기화
+                                form.UpdatePlayerPositions(); // UI 동기화
                             }
                         }));
                     }
@@ -144,14 +164,31 @@ namespace clue_game6
                         string type = parts[3];
                         string name = parts[4];
 
-                        if (playerId == to)
+                        this.Invoke((MethodInvoker)(() =>
                         {
-                            textBox1.AppendText($"플레이어 {from + 1} 이(가) 카드를 보여줬습니다: <{type}> {name}\r\n");
-                        }
-                        else
-                        {
-                            textBox1.AppendText($"플레이어 {from + 1} 이(가) 플레이어 {to + 1} 에게 카드를 보여줬습니다.\r\n");
-                        }
+                            if (playerId == to)
+                            {
+                                textBox1.AppendText($"플레이어 {from + 1} 이(가) 카드를 보여줬습니다: <{type}> {name}\r\n");
+                            }
+                            else
+                            {
+                                textBox1.AppendText($"플레이어 {from + 1} 이(가) 플레이어 {to + 1} 에게 카드를 보여줬습니다.\r\n");
+                            }
+                        }));
+                    }
+                    else if (parts[0] == "SUGGEST_REPLY_LOG" && parts.Length >= 3)
+                    {
+                        int from = int.Parse(parts[1]);
+                        int to = int.Parse(parts[2]);
+
+                        BroadcastLogToAllForms($"→ 플레이어 {from + 1} 이(가) 플레이어 {to + 1} 의 추리에 반박했습니다.");
+
+                    }
+                    else if (parts[0] == "SUGGEST_NO_REPLY")
+                    {
+                        int to = int.Parse(parts[1]);
+                        BroadcastLogToAllForms($"❗ 플레이어 {to + 1} 의 추리에 아무도 반박하지 못했습니다.");
+
                     }
                     else if (parts[0] == "FINAL_SUGGEST" && parts.Length == 5)
                     {
@@ -162,9 +199,57 @@ namespace clue_game6
                         string room = parts[4];
 
                         string log = $"[최종추리] Player{who + 1}: {man}가 {room}에서 {weapon}으로 범행";
-                        Invoke(new Action(() =>
+                        BroadcastLogToAllForms(log);
+
+                    }
+                    else if (parts[0] == "SUGGEST" && parts.Length >= 2)
+                    {
+                        // 추리 메시지 수신 시 텍스트창에 출력
+                        string suggestionText = msg.Substring("SUGGEST|".Length);
+                        BroadcastLogToAllForms("[추리 메시지] " + suggestionText);
+
+                    }
+                    else if (parts[0] == "SUGGEST_REPLY_NOTICE")
+                    {
+                        // 추리 응답 통보만 (카드 정보 없이, 모두에게 공개)
+                        int from = int.Parse(parts[1]);
+                        int to = int.Parse(parts[2]);
+                        BroadcastLogToAllForms($"플레이어 {from + 1} 이(가) 플레이어 {to + 1} 에게 카드를 보여줬습니다.");
+                    }
+                    else if (parts[0] == "UPDATE_UI")
+                    {
+                        int who = int.Parse(parts[1]);
+                        this.Invoke((MethodInvoker)(() =>
                         {
-                            textBox1.AppendText(log + "\r\n");
+                            foreach (var form in PlayerChoose.AllPlayerForms)
+                            {
+                                form.UpdateControlState();
+                            }
+                        }));
+                    }
+                    else if (parts[0] == "PLAYER_WIN" && parts.Length == 2)
+                    {
+                        int winner = int.Parse(parts[1]);
+                        this.Invoke((MethodInvoker)(() =>
+                        {
+                            MessageBox.Show($"🎉 Player {winner + 1} 가 정답을 맞춰 승리했습니다!", "게임 종료");
+                            Application.Exit();
+                        }));
+                    }
+                    else if (parts[0] == "PLAYER_FAIL" && parts.Length == 2)
+                    {
+                        int loser = int.Parse(parts[1]);
+                        this.Invoke((MethodInvoker)(() =>
+                        {
+                            if (playerId == loser)
+                            {
+                                MessageBox.Show("❌ 당신은 틀렸습니다. 게임에서 탈락했습니다.", "게임 종료");
+                                player.isAlive = false;
+                            }
+                            else
+                            {
+                                BroadcastLogToAllForms($"⚠️ Player {loser + 1} 가 최종 추리에 실패해 탈락했습니다.");
+                            }
                         }));
                     }
                 }
@@ -331,7 +416,12 @@ namespace clue_game6
                 foreach (var playerForm in PlayerChoose.AllPlayerForms)
                 {
                     playerForm.UpdatePlayerPositions();
-                    playerForm.UpdateControlState();
+
+                    // ✔ 단일 모드거나, 본인의 폼이면 버튼 상태 갱신
+                    if (!isNetworkMode || playerForm.playerId == this.playerId)
+                    {
+                        playerForm.UpdateControlState();
+                    }
                 }
 
             }
@@ -386,12 +476,17 @@ namespace clue_game6
 
             if (playerId == index)
             {
+                player.hasRolled = false;
+                player.hasSuggested = false;
+
+                lbRemain.Text = "0";
+                MessageBox.Show("당신의 턴입니다!");
                 btnRoll.Enabled = true;
                 btnTurnEnd.Enabled = false;
-                MessageBox.Show("당신의 턴입니다! ");
             }
             else
             {
+                lbRemain.Text = "0";
                 btnRoll.Enabled = false;
                 btnTurnEnd.Enabled = false;
             }
@@ -462,18 +557,17 @@ namespace clue_game6
         }
 
         private void btnSug_Click(object sender, EventArgs e)
-        {
-
-            //  Gina온라인 모드
-            if (isNetworkMode)
-                suggest = new Form3(gameState, player, 1, playerId, true, stream); //  Gina온라인 모드
-         
-            else if (player.hasSuggested)
+        {        
+            if (player.hasSuggested)
             {
                 MessageBox.Show("이미 추리를 했습니다.");
                 return;
             }
-            suggest = new Form3(gameState, player, 1, playerId);
+            // Gina온라인 모드
+            if (isNetworkMode)
+                suggest = new Form3(gameState, player, 1, playerId, true, stream);
+            else
+                suggest = new Form3(gameState, player, 1, playerId);
 
             suggest.Show();
             player.hasSuggested = true;
@@ -512,6 +606,16 @@ namespace clue_game6
         {
             SendMessage($"SUGGEST|{text}");
         }
+        public static void BroadcastLogToAllForms(string log)
+        {
+            foreach (var form in PlayerChoose.AllPlayerForms)
+            {
+                form.Invoke(new Action(() =>
+                {
+                    form.textBox1.AppendText(log + "\r\n");
+                }));
+            }
+        }
         private void btnSaveLog_Click(object sender, EventArgs e)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
@@ -525,7 +629,7 @@ namespace clue_game6
                 gameState.SaveLogToFile(saveFileDialog.FileName);
             }
         }
-
+         
         private void pictureBox1_Click(object sender, EventArgs e)
         {
 
