@@ -105,8 +105,8 @@ namespace clue_game6
             LoginForm lgf = new LoginForm(playerCount);
             if (lgf.ShowDialog() == DialogResult.OK)
             {
-                // LoginForm 中创建了 WaitingForm 并 Show() 了，但我们需要把它交给主程序托管
-                MainFormToRun = lgf.WaitingFormInstance;  // 暴露 WaitingForm 对象
+                
+                MainFormToRun = lgf.WaitingFormInstance;  
                 this.Close();
             }
 
