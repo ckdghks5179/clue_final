@@ -346,6 +346,42 @@ namespace clue_game6
                 stream.Write(data, 0, data.Length);
             }
         }
+        private void ApplyDetectiveStyle()
+        {
+            this.BackColor = Color.Bisque;
+            this.Font = new Font("Georgia", 10, FontStyle.Regular);
+
+            foreach (Control ctrl in this.Controls)
+            {
+                if (ctrl is Label lbl)
+                {
+                    lbl.ForeColor = Color.SaddleBrown;
+                    lbl.Font = new Font("Georgia", 11, FontStyle.Bold);
+                    lbl.BackColor = Color.Transparent;
+                }
+                else if (ctrl is TextBox tb)
+                {
+                    tb.BackColor = Color.LemonChiffon;
+                    tb.ForeColor = Color.Black;
+                    tb.BorderStyle = BorderStyle.FixedSingle;
+                    tb.Font = new Font("Courier New", 10);
+                }
+                else if (ctrl is Button btn)
+                {
+                    btn.BackColor = Color.SaddleBrown;
+                    btn.ForeColor = Color.White;
+                    btn.FlatStyle = FlatStyle.Flat;
+                    btn.FlatAppearance.BorderSize = 0;
+                    btn.Font = new Font("Georgia", 9, FontStyle.Bold);
+                }
+                else if (ctrl is ComboBox cb)
+                {
+                    cb.BackColor = Color.LemonChiffon;
+                    cb.ForeColor = Color.Black;
+                    cb.Font = new Font("Georgia", 9);
+                }
+            }
+        }
         private void Form3_Load(object sender, EventArgs e)
         {
             button1.Enabled = false;

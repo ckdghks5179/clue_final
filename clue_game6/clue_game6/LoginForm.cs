@@ -25,6 +25,7 @@ namespace clue_game6
         public LoginForm()
         {
             InitializeComponent();
+            ApplyDetectiveStyle();
         }
         private int playerCount;
 
@@ -103,6 +104,42 @@ namespace clue_game6
             catch (Exception ex)
             {
                 MessageBox.Show("서버 연결 실패: " + ex.Message);
+            }
+        }
+        private void ApplyDetectiveStyle()
+        {
+            this.BackColor = Color.Bisque;
+            this.Font = new Font("Georgia", 10, FontStyle.Regular);
+
+            foreach (Control ctrl in this.Controls)
+            {
+                if (ctrl is Label lbl)
+                {
+                    lbl.ForeColor = Color.SaddleBrown;
+                    lbl.Font = new Font("Georgia", 11, FontStyle.Bold);
+                    lbl.BackColor = Color.Transparent;
+                }
+                else if (ctrl is TextBox tb)
+                {
+                    tb.BackColor = Color.LemonChiffon;
+                    tb.ForeColor = Color.Black;
+                    tb.BorderStyle = BorderStyle.FixedSingle;
+                    tb.Font = new Font("Courier New", 10);
+                }
+                else if (ctrl is Button btn)
+                {
+                    btn.BackColor = Color.SaddleBrown;
+                    btn.ForeColor = Color.White;
+                    btn.FlatStyle = FlatStyle.Flat;
+                    btn.FlatAppearance.BorderSize = 0;
+                    btn.Font = new Font("Georgia", 9, FontStyle.Bold);
+                }
+                else if (ctrl is ComboBox cb)
+                {
+                    cb.BackColor = Color.LemonChiffon;
+                    cb.ForeColor = Color.Black;
+                    cb.Font = new Font("Georgia", 9);
+                }
             }
         }
     }

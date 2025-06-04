@@ -81,19 +81,17 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-
     <Compile Include="WaitingForm .cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="WaitingForm .Designer.cs">
       <DependentUpon>WaitingForm .cs</DependentUpon>
-	</Compile>
+    </Compile>
     <Compile Include="SelectCardForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="SelectCardForm.Designer.cs">
       <DependentUpon>SelectCardForm.cs</DependentUpon>
-
     </Compile>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
@@ -120,13 +118,11 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-
     <EmbeddedResource Include="WaitingForm .resx">
       <DependentUpon>WaitingForm .cs</DependentUpon>
-	</EmbeddedResource>
+    </EmbeddedResource>
     <EmbeddedResource Include="SelectCardForm.resx">
       <DependentUpon>SelectCardForm.cs</DependentUpon>
-
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -142,11 +138,56 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-
     <WCFMetadata Include="Connected Services\" />
-
     <None Include="Resources\캡처20.png" />
-
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\dice.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\dice-1-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\dice-2-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\dice-3-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\dice-4-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\dice-5-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\dice-6-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\dice-cube.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imgBackground.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\next.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\note.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\send.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\sug.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\suggest.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\fullmap.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\dice-142528.wav" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -27,6 +27,30 @@ namespace clue_game6
     {
         Form2 notePad;
         Form3 suggest;
+
+        private int remainingSteps = 0;
+        private Point nextLogicalPosition;
+        private bool isMoving = false;
+        Point targetPosition;
+        int stepSize = 4;
+        Queue<Point> moveQueue = new Queue<Point>();
+        PictureBox movingPlayerBox;
+
+        private Random rand = new Random();
+        private Random random = new Random();
+
+        private Image[] diceImages;
+        private System.Windows.Forms.Timer diceTimer;
+        private int animationCounter;
+        private int finalDice1;
+        private int finalDice2;
+        float currentX, currentY;
+
+        private Dictionary<Button, System.Windows.Forms.Timer> hoverTimers = new Dictionary<Button, System.Windows.Forms.Timer>();
+        private Dictionary<Button, int> originalTops = new Dictionary<Button, int>();
+        private Dictionary<Button, int> currentOffsets = new Dictionary<Button, int>();
+        private Dictionary<Button, bool> hovering = new Dictionary<Button, bool>();
+
         // 네트워크 스트림 및 온라인 여부 플래그gina
         private NetworkStream stream;      // 서버와의 통신에 사용됨
         private bool isNetworkMode = false; // 온라인 모드 여부
@@ -51,11 +75,10 @@ namespace clue_game6
         string[] man = { "Green", "Mustard", "Peacock", "Plum", "Scarlett", "White" };
         string[] weapon = { "촛대", "파이프", "리볼버", "밧줄", "렌치", "단검" };
         string[] room = { "주방", "공부방", "무도회장", "온실", "식당", "당구장", "서재", "라운지", "홀" };
-
+        
         private int RollDice()
         {
-            Random random = new Random();
-            return random.Next(2, 13);
+            return rand.Next(1, 7);
         }
         private void Init(GameState state, int id)
         {
@@ -66,6 +89,7 @@ namespace clue_game6
         public Form1(GameState gamestate1, int playerId)
         {
             InitializeComponent();
+            ApplyDetectiveStyle();
             Init(gamestate1, playerId);
             this.isNetworkMode = false;//온라인 모드가 아님
         }
@@ -75,10 +99,14 @@ namespace clue_game6
         public Form1(GameState state, int playerId, NetworkStream stream)
         {
             InitializeComponent();
+            ApplyDetectiveStyle();
             Init(state, playerId);
             this.stream = stream;
             this.isNetworkMode = true;
             PlayerChoose.AllPlayerForms.Add(this); // 모든 플레이어 폼 리스트에 등록
+            this.gameState = state;
+            this.playerId = playerId;
+            this.player = playerList[playerId];
         }
         // 서버 메시지 수신 쓰레드 시작
         private void StartListening()
@@ -327,6 +355,21 @@ namespace clue_game6
                     myPlayerBox = playerBox;
                 }
             }
+            diceImages = new Image[]
+            {
+                Properties.Resources.dice_1_icon,
+                Properties.Resources.dice_2_icon,
+                Properties.Resources.dice_3_icon,
+                Properties.Resources.dice_4_icon,
+                Properties.Resources.dice_5_icon,
+                Properties.Resources.dice_6_icon
+            };
+            diceTimer = new System.Windows.Forms.Timer();
+            diceTimer.Interval = 100;
+            diceTimer.Tick += DiceTimer_Tick;
+
+            UpdateControlState();
+            UpdateCurrentPlayerLabel();
             UpdateControlState();
             this.ClientSize = new Size(800, 550); //창 키울 필요 없게
 
@@ -336,19 +379,68 @@ namespace clue_game6
 
         private void btnRoll_Click(object sender, EventArgs e)
         {
-            
-            int diceValue = RollDice();
-            dice1.Text = diceValue.ToString();
-            lbRemain.Text = diceValue.ToString();
-
-            player.hasRolled = true;
+            finalDice1 = RollDice();
+            finalDice2 = RollDice();
+            int total = finalDice1 + finalDice2;
+            animationCounter = 0;
+            diceTimer.Start();
             btnRoll.Enabled = false;
+            btnTurnEnd.Enabled = false;
+
+            remainingSteps = total;
+            dice1.Text = finalDice1.ToString();
+            labelDice2.Text = finalDice2.ToString();
+
+
+            btnRoll.Enabled = false;
+            pictureBoxDice.Image = GetDiceImage(finalDice1);
+            pictureBoxDice2.Image = GetDiceImage(finalDice2);
+            System.Media.SoundPlayer player = new System.Media.SoundPlayer(Properties.Resources.dice_142528);
+            player.Play();
+            remainingSteps = total;
+
+            btnTurnEnd.Enabled = true;
+
+            btnUp.Enabled = true;
+            btnDown.Enabled = true;
+            btnLeft.Enabled = true;
+            btnRight.Enabled = true;
+        }
+        private void DiceTimer_Tick(object sender, EventArgs e)
+        {
+            animationCounter++;
+            int temp1 = RollDice();
+            int temp2 = RollDice();
+
+            pictureBoxDice.Image = diceImages[temp1 - 1];
+            pictureBoxDice2.Image = diceImages[temp2 - 1];
+            if(animationCounter >= 10)
+            {
+                diceTimer.Stop();
+                pictureBoxDice.Image = diceImages[finalDice1 - 1];
+                pictureBoxDice2.Image = diceImages[finalDice2 - 1];
+            }
+        }
+        private Image GetDiceImage(int value)
+        {
+            switch (value)
+            {
+                case 1: return Properties.Resources.dice_1_icon;
+                case 2: return Properties.Resources.dice_2_icon;
+                case 3: return Properties.Resources.dice_3_icon;
+                case 4: return Properties.Resources.dice_4_icon;
+                case 5: return Properties.Resources.dice_5_icon;
+                case 6: return Properties.Resources.dice_6_icon;
+                default: return null;
+            }
         }
 
         private void TryMove(int dx, int dy)
         {
-           
-            if (int.Parse(lbRemain.Text) <= 0) return;
+
+            if (isMoving)
+                return;
+            if (remainingSteps <= 0) return;
 
             int newX = player.x + dx;
             int newY = player.y + dy;
@@ -362,6 +454,13 @@ namespace clue_game6
                 if (other != player && other.x == newX && other.y == newY)
                     return;
             }
+            // player animation 
+           
+            nextLogicalPosition = new Point(newX, newY);
+            targetPosition = gameState.clue_map_point[newX, newY];
+            isMoving = true;
+            movingPlayerBox = playerBoxes[playerId];
+            moveTimer.Start();
 
             //방 진입 , 최종 방 진입 여부 판정
             Point dest = new Point(newY, newX); // 열, 행 순서
@@ -394,8 +493,7 @@ namespace clue_game6
                 gameState.clue_map[player.x, player.y] = 0;
 
             // 이동 및 좌표 업데이트
-            player.x = newX;
-            player.y = newY;
+           
             playerBoxes[playerId].Location = gameState.clue_map_point[newX, newY];
             foreach (var form in PlayerChoose.AllPlayerForms)
             {
@@ -490,7 +588,7 @@ namespace clue_game6
                 btnRoll.Enabled = false;
                 btnTurnEnd.Enabled = false;
             }
-
+            
             UpdateControlState();
         }
 
@@ -546,6 +644,7 @@ namespace clue_game6
                 {
                     form.UpdateControlState();
                     form.UpdatePlayerPositions();
+                    form.UpdateCurrentPlayerLabel();
                 }
             }
         }
@@ -633,6 +732,251 @@ namespace clue_game6
         private void pictureBox1_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void UpdateCurrentPlayerLabel()
+        {
+            int current = gameState.CurrentTurn;
+            labelCurrentPlayer.Text = $"Current Player: {current + 1}";
+            if (current == playerId)
+                labelCurrentPlayer.ForeColor = Color.Green;
+            else
+                labelCurrentPlayer.ForeColor = Color.Black;
+        }
+        void MovePlayerTo(Point destination)
+        {
+            targetPosition = destination;
+            moveTimer.Start();
+        }
+        private void moveTimer_Tick(object sender, EventArgs e)
+        {
+            if (movingPlayerBox == null)
+            {
+                moveTimer.Stop();
+                isMoving = false;
+                return;
+            }
+
+            int dx = targetPosition.X - movingPlayerBox.Left;
+            int dy = targetPosition.Y - movingPlayerBox.Top;
+
+            if (Math.Abs(dx) <= stepSize && Math.Abs(dy) <= stepSize)
+            {
+
+                movingPlayerBox.Left = targetPosition.X;
+                movingPlayerBox.Top = targetPosition.Y;
+                moveTimer.Stop();
+
+
+                int newX = nextLogicalPosition.X;
+                int newY = nextLogicalPosition.Y;
+                player.x = newX;
+                player.y = newY;
+                foreach (var form in PlayerChoose.AllPlayerForms)
+                {
+                    form.gameState.Players[playerId].x = newX;
+                    form.gameState.Players[playerId].y = newY;
+
+                    if (form.playerBoxes.ContainsKey(playerId))
+                    {
+                        form.playerBoxes[playerId].Location = form.gameState.clue_map_point[newX, newY];
+                    }
+
+                    form.UpdatePlayerPositions();
+                    form.UpdateControlState();
+                }
+                remainingSteps--;
+                lbRemain.Text = remainingSteps.ToString();
+
+                if (gameState.clue_map[newX, newY] == 2)
+                {
+                    player.isInRoom = true;
+                    btnSug.Enabled = true;
+
+                }
+                else if (gameState.clue_map[newX, newY] == 5)
+                {
+                    player.isFinalRoom = true;
+                    btnFinalSug.Enabled = true;
+
+                }
+                else
+                {
+                    player.isInRoom = false;
+                }
+
+
+                if (gameState.clue_map[player.x, player.y] == 2)
+                    gameState.clue_map[player.x, player.y] = 2;
+                else
+                    gameState.clue_map[player.x, player.y] = 0;
+
+                player.x = newX;
+                player.y = newY;
+                gameState.clue_map[newX, newY] = 3;
+
+
+
+                foreach (var form in PlayerChoose.AllPlayerForms)
+                {
+                    form.UpdatePlayerPositions();
+                }
+
+                isMoving = false;
+                return;
+            }
+
+
+            if (dx != 0)
+                movingPlayerBox.Left += stepSize * Math.Sign(dx);
+            if (dy != 0)
+                movingPlayerBox.Top += stepSize * Math.Sign(dy);
+        }
+
+        private void ApplyDetectiveStyle()
+        {
+            //  Общий стиль: 
+            this.BackColor = Color.FromArgb(210, 180, 140);
+
+            //  Label: 
+            labelCurrentPlayer.Font = new Font("Georgia", 12, FontStyle.Bold);
+            labelCurrentPlayer.ForeColor = Color.DarkOliveGreen;
+            labelCurrentPlayer.BackColor = Color.Transparent;
+            labelChat.Font = new Font("Georgia", 12, FontStyle.Bold);
+            labelChat.ForeColor = Color.Black;
+            labelChat.BackColor = Color.Transparent;
+            label3.Font = new Font("Georgia", 12, FontStyle.Bold);
+            label3.ForeColor = Color.Black;
+            label3.BackColor = Color.Transparent;
+
+
+            //  Кнопки
+            StyleButton(btnRoll, Properties.Resources.dice_cube);
+            StyleButton(btnTurnEnd, Properties.Resources.next);
+            StyleButton(btnNote, Properties.Resources.note);
+            StyleButton2(btnFinalSug);
+            StyleButton2(button1);
+            StyleButton2(btnSug);
+            StyleButton2(btnSaveLog);
+
+
+            // TextBox: memo и сообщения
+            textBox1.BackColor = Color.Bisque;
+            textBox1.ForeColor = Color.Black;
+            textBox1.Font = new Font("Courier New", 10, FontStyle.Regular);
+            textBox1.BorderStyle = BorderStyle.FixedSingle;
+
+            //  Список карт
+            textBox2.BackColor = Color.LemonChiffon;
+            textBox2.ForeColor = Color.Black;
+            textBox2.Font = new Font("Consolas", 9, FontStyle.Regular);
+
+        }
+
+        private void StyleButton(Button btn, Image backgroundImage = null)
+        {
+            btn.FlatStyle = FlatStyle.Flat;
+            btn.FlatAppearance.BorderSize = 0;
+            btn.FlatAppearance.MouseDownBackColor = Color.Transparent;
+            btn.FlatAppearance.MouseOverBackColor = Color.Transparent;
+            btn.BackColor = Color.Transparent;
+            btn.ForeColor = Color.White;
+            btn.Font = new Font("Georgia", 10, FontStyle.Bold);
+
+
+            btn.Cursor = Cursors.Hand;
+
+            if (backgroundImage != null)
+            {
+                btn.BackgroundImage = backgroundImage;
+                btn.BackgroundImageLayout = ImageLayout.Stretch;
+            }
+            if (!originalTops.ContainsKey(btn))
+                originalTops[btn] = btn.Top;
+
+            currentOffsets[btn] = 0;
+            hovering[btn] = false;
+
+            btn.MouseEnter -= btn_MouseEnter;
+            btn.MouseLeave -= btn_MouseLeave;
+            btn.MouseEnter += btn_MouseEnter;
+            btn.MouseLeave += btn_MouseLeave;
+
+            if (!hoverTimers.ContainsKey(btn))
+            {
+                System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+                timer.Interval = 15;
+                timer.Tick += (s, e) => AnimateButton(btn);
+                hoverTimers[btn] = timer;
+                timer.Start();
+            }
+        }
+        private void StyleButton2(Button btn)
+        {
+            btn.FlatAppearance.MouseDownBackColor = Color.Transparent;
+            btn.FlatAppearance.MouseOverBackColor = Color.Transparent;
+            btn.BackColor = Color.SaddleBrown;
+            btn.ForeColor = Color.White;
+            btn.FlatStyle = FlatStyle.Flat;
+            btn.FlatAppearance.BorderSize = 0;
+            btn.Font = new Font("Georgia", 9, FontStyle.Bold);
+            btn.Cursor = Cursors.Hand;
+
+            currentOffsets[btn] = 0;
+            hovering[btn] = false;
+
+            btn.MouseEnter -= btn_MouseEnter;
+            btn.MouseLeave -= btn_MouseLeave;
+            btn.MouseEnter += btn_MouseEnter;
+            btn.MouseLeave += btn_MouseLeave;
+
+            if (!hoverTimers.ContainsKey(btn))
+            {
+                System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+                timer.Interval = 15;
+                timer.Tick += (s, e) => AnimateButton(btn);
+                hoverTimers[btn] = timer;
+                timer.Start();
+            }
+        }
+
+        private void btn_MouseEnter(object sender, EventArgs e)
+        {
+            Button btn = sender as Button;
+            if (btn != null)
+            {
+                hovering[btn] = true;
+            }
+        }
+        private void btn_MouseLeave(object sender, EventArgs e)
+        {
+            Button btn = sender as Button;
+            if (btn != null)
+            {
+                hovering[btn] = false;
+            }
+        }
+        private void AnimateButton(Button btn)
+        {
+            if (!originalTops.ContainsKey(btn)) return;
+
+            int maxOffset = 5;
+            int speed = 1;
+
+            int targetOffset = hovering[btn] ? -maxOffset : 0;
+            int currentOffset = currentOffsets[btn];
+
+            if (currentOffset != targetOffset)
+            {
+                int direction = (targetOffset > currentOffset) ? 1 : -1;
+                currentOffset += speed * direction;
+
+                if ((direction == -1 && currentOffset < targetOffset) || (direction == 1 && currentOffset > targetOffset))
+                    currentOffset = targetOffset;
+
+                btn.Top = originalTops[btn] + currentOffset;
+                currentOffsets[btn] = currentOffset;
+            }
         }
     }
 }
