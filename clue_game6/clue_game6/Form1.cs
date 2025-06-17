@@ -255,6 +255,12 @@ namespace clue_game6
                             }
                         }));
                     }
+                    else if (parts[0] == "CHAT" && parts.Length >= 3)
+                    {
+                        string from = parts[1];
+                        string text = parts[2];
+                        BroadcastLogToAllForms($"💬 {from}: {text}");
+                    }
                     else if (parts[0] == "PLAYER_WIN" && parts.Length == 2)
                     {
                         int winner = int.Parse(parts[1]);
@@ -278,6 +284,13 @@ namespace clue_game6
                             {
                                 BroadcastLogToAllForms($"⚠️ Player {loser + 1} 가 최종 추리에 실패해 탈락했습니다.");
                             }
+                        }));
+                    }
+                    else if (!msg.Contains("|"))
+                    {
+                        this.Invoke((MethodInvoker)(() =>
+                        {
+                            textBox1.AppendText(msg + "\r\n");
                         }));
                     }
                 }
@@ -686,10 +699,19 @@ namespace clue_game6
         {
             //  Gina온라인 모드
             if (isNetworkMode)
-                suggest = new Form3(gameState, player, 3, playerId, true, stream);
+            {
+                string chat = text_Chat.Text.Trim();
+                if (!string.IsNullOrEmpty(chat))
+                {
+                    SendMessage($"CHAT|{player.name}|{chat}");
+                    text_Chat.Clear(); 
+                }
+                Console.WriteLine($"💬 [发送测试] {player.name}: {chat}");
+            }
             else
-                suggest = new Form3(gameState, player, 3, playerId);
-            suggest.Show();
+            {
+                MessageBox.Show("오프라인 모드에서는 채팅이 지원되지 않습니다.");
+            }
         }
         //gina
         public void ShowSuggestionMessage(string text)

@@ -135,6 +135,7 @@ class Program
                             string from = parts[1];
                             string text = parts.Length > 2 ? parts[2] : "";
                             Console.WriteLine($"💬 {from}: {text}");
+                            Console.WriteLine($"💬 {from}: {text}");
                             BroadcastMessage($"💬 {from}: {text}");
                             break;
 
