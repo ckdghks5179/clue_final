@@ -406,6 +406,12 @@ namespace clue_game6
 
         private void btnRoll_Click(object sender, EventArgs e)
         {
+            if (player.hasRolled)
+            {
+                MessageBox.Show("이미 주사위를 굴렸습니다.");
+                return;
+            }
+
             finalDice1 = RollDice();
             finalDice2 = RollDice();
             int total = finalDice1 + finalDice2;
@@ -418,12 +424,11 @@ namespace clue_game6
             dice1.Text = finalDice1.ToString();
             labelDice2.Text = finalDice2.ToString();
 
-
             btnRoll.Enabled = false;
             pictureBoxDice.Image = GetDiceImage(finalDice1);
             pictureBoxDice2.Image = GetDiceImage(finalDice2);
-            System.Media.SoundPlayer player = new System.Media.SoundPlayer(Properties.Resources.dice_142528);
-            player.Play();
+            System.Media.SoundPlayer playerSound = new System.Media.SoundPlayer(Properties.Resources.dice_142528);
+            playerSound.Play();
 
             btnTurnEnd.Enabled = true;
 
@@ -431,6 +436,8 @@ namespace clue_game6
             btnDown.Enabled = true;
             btnLeft.Enabled = true;
             btnRight.Enabled = true;
+
+            player.hasRolled = true;
         }
         private void DiceTimer_Tick(object sender, EventArgs e)
         {
@@ -553,7 +560,7 @@ namespace clue_game6
 
                 lbRemain.Text = "0";
                 MessageBox.Show("당신의 턴입니다!");
-                btnRoll.Enabled = true;
+
                 btnTurnEnd.Enabled = false;
             }
             else
@@ -606,11 +613,11 @@ namespace clue_game6
             }
             else
             {
-               
-            lbRemain.Text = "0";
-            player.hasSuggested = false;
+                lbRemain.Text = "0";
+                player.hasSuggested = false;
+                player.hasRolled = false;
 
-            gameState.AdvanceTurn();
+                gameState.AdvanceTurn();
             foreach (var form in PlayerChoose.AllPlayerForms)
                 {
                     form.UpdateControlState();
