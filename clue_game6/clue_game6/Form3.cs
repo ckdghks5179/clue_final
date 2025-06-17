@@ -22,17 +22,21 @@ namespace clue_game6
         Player player;
         int choose;
         int id;
-        public Form3(GameState G,Player p, int i, int id_num)
+
+        public Form3(GameState G, Player p, int i, int id_num)
         {
             InitializeComponent();
             player = p;
             choose = i;
             gameState = G;
             id = id_num;
-            }
+
+            this.Load += Form3_Load; // Load 이벤트 연결
+        }
+
         ////gina네트워크 모드 생성자 (오버로드)
         public Form3(GameState G, Player p, int i, int id_num, bool isNetMode, NetworkStream netStream)
-    : this(G, p, i, id_num) 
+    : this(G, p, i, id_num)
         {
             isNetworkMode = isNetMode;
             stream = netStream;
@@ -202,7 +206,7 @@ namespace clue_game6
                             }
                         }
                         BroadcastControlUpdate();
-                        
+
                         this.Close();
                         return;
                     }
@@ -223,12 +227,13 @@ namespace clue_game6
                 }
                 BroadcastControlUpdate();
                 this.Close();
-            }      
+            }
             // 최종 추리
             else if (choose == 2)
             {
                 string finalLog = $"Player {player.id + 1}의 최종 추리: {manBox.Text}, {weaponBox.Text}, {roomBox.Text}";
                 gameState.AddLog(finalLog);
+
                 if (isNetworkMode && stream != null && stream.CanWrite)
                 {
                     // 온라인 모드: 서버로 전송하여 우승자를 결정합니다.
@@ -238,10 +243,10 @@ namespace clue_game6
                 }
                 else
                 {
-
+                    // 오프라인 모드: 직접 정답 확인
                     if (gameState.answer[0].name == manBox.Text &&
-                    gameState.answer[1].name == weaponBox.Text &&
-                    gameState.answer[2].name == roomBox.Text)
+                        gameState.answer[1].name == weaponBox.Text &&
+                        gameState.answer[2].name == roomBox.Text)
                     {
                         gameState.AddLog($"Player {player.id + 1}가 정답을 맞춰서 게임에서 승리했습니다!");
                         MessageBox.Show("정답입니다! 게임에서 승리했습니다!");
@@ -254,8 +259,6 @@ namespace clue_game6
                         player.isAlive = false;
                     }
                 }
-                
-
 
                 BroadcastControlUpdate();
                 this.Close();
@@ -263,7 +266,7 @@ namespace clue_game6
 
 
             // 반박 카드 선택
-            else if (choose ==3)
+            else if (choose == 3)
             {
                 //for(int i =0;i<player.hands.Count();i++)
                 //{
@@ -283,55 +286,55 @@ namespace clue_game6
                 //    this.Close();
                 //    }
                 //}
-            
-                    for (int i = 0; i < player.hands.Count; i++)
+
+                for (int i = 0; i < player.hands.Count; i++)
+                {
+                    string selectedCardName = null;
+                    string selectedCardType = null;
+
+                    if (manBox.Text == player.hands[i].name)
                     {
-                        string selectedCardName = null;
-                        string selectedCardType = null;
+                        selectedCardName = player.hands[i].name;
+                        selectedCardType = player.hands[i].type;
+                    }
+                    else if (weaponBox.Text == player.hands[i].name)
+                    {
+                        selectedCardName = player.hands[i].name;
+                        selectedCardType = player.hands[i].type;
+                    }
+                    else if (roomBox.Text == player.hands[i].name)
+                    {
+                        selectedCardName = player.hands[i].name;
+                        selectedCardType = player.hands[i].type;
+                    }
 
-                        if (manBox.Text == player.hands[i].name)
-                        {
-                            selectedCardName = player.hands[i].name;
-                            selectedCardType = player.hands[i].type;
-                        }
-                        else if (weaponBox.Text == player.hands[i].name)
-                        {
-                            selectedCardName = player.hands[i].name;
-                            selectedCardType = player.hands[i].type;
-                        }
-                        else if (roomBox.Text == player.hands[i].name)
-                        {
-                            selectedCardName = player.hands[i].name;
-                            selectedCardType = player.hands[i].type;
-                        }
+                    if (selectedCardName != null)
+                    {
 
-                        if (selectedCardName != null)
+                        if (!isNetworkMode)
                         {
-                            
-                            if (!isNetworkMode)
+                            if (gameState.CurrentTurn < PlayerChoose.AllPlayerForms.Count)
                             {
-                                if (gameState.CurrentTurn < PlayerChoose.AllPlayerForms.Count)
-                                {
-                                    PlayerChoose.AllPlayerForms[gameState.CurrentTurn].textBox1.Text +=
-                                        $"player{id}: {selectedCardName}\r\n";
-                                }
+                                PlayerChoose.AllPlayerForms[gameState.CurrentTurn].textBox1.Text +=
+                                    $"player{id}: {selectedCardName}\r\n";
                             }
-                            else
-                            {
+                        }
+                        else
+                        {
                             //  온라인 모드: 서버에 SUGGEST_REPLY 명령을 보냅니다(서버에서 재배포)
                             if (stream != null && stream.CanWrite)
-                                {
-                                    string replyMsg = $"SUGGEST_REPLY|{id}|{gameState.CurrentTurn}|{selectedCardType}|{selectedCardName}\n";
-                                    byte[] data = Encoding.UTF8.GetBytes(replyMsg);
-                                    stream.Write(data, 0, data.Length);
-                                }
+                            {
+                                string replyMsg = $"SUGGEST_REPLY|{id}|{gameState.CurrentTurn}|{selectedCardType}|{selectedCardName}\n";
+                                byte[] data = Encoding.UTF8.GetBytes(replyMsg);
+                                stream.Write(data, 0, data.Length);
                             }
+                        }
                         BroadcastControlUpdate();
                         this.Close();
-                            break;
-                        }
+                        break;
                     }
-                
+                }
+
 
             }
         }
@@ -385,7 +388,19 @@ namespace clue_game6
         private void Form3_Load(object sender, EventArgs e)
         {
             button1.Enabled = false;
+
+            if (choose == 1)
+            {
+                roomBox.Enabled = false;
+
+                // 현재 플레이어가 위치한 좌표에서 방 이름 자동 설정
+                string roomName = gameState.GetRoomNameByPosition(player.x, player.y);
+                roomBox.Items.Clear();
+                roomBox.Items.Add(roomName);
+                roomBox.SelectedIndex = 0;
+            }
         }
     }
-    }
+}
+
 
