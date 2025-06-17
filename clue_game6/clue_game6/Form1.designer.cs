@@ -61,18 +61,18 @@
             // 
             // btnRoll
             // 
-            this.btnRoll.Location = new System.Drawing.Point(656, 382);
+            this.btnRoll.Location = new System.Drawing.Point(805, 426);
             this.btnRoll.Name = "btnRoll";
-            this.btnRoll.Size = new System.Drawing.Size(53, 63);
+            this.btnRoll.Size = new System.Drawing.Size(53, 70);
             this.btnRoll.TabIndex = 0;
             this.btnRoll.UseVisualStyleBackColor = true;
             this.btnRoll.Click += new System.EventHandler(this.btnRoll_Click);
             // 
             // btnTurnEnd
             // 
-            this.btnTurnEnd.Location = new System.Drawing.Point(656, 452);
+            this.btnTurnEnd.Location = new System.Drawing.Point(805, 504);
             this.btnTurnEnd.Name = "btnTurnEnd";
-            this.btnTurnEnd.Size = new System.Drawing.Size(53, 63);
+            this.btnTurnEnd.Size = new System.Drawing.Size(53, 70);
             this.btnTurnEnd.TabIndex = 1;
             this.btnTurnEnd.UseVisualStyleBackColor = true;
             this.btnTurnEnd.Click += new System.EventHandler(this.btnTurnEnd_Click);
@@ -80,26 +80,26 @@
             // dice1
             // 
             this.dice1.AutoSize = true;
-            this.dice1.Location = new System.Drawing.Point(706, 342);
+            this.dice1.Location = new System.Drawing.Point(855, 382);
             this.dice1.Name = "dice1";
-            this.dice1.Size = new System.Drawing.Size(17, 18);
+            this.dice1.Size = new System.Drawing.Size(18, 20);
             this.dice1.TabIndex = 2;
             this.dice1.Text = "1";
             // 
             // lbRemain
             // 
             this.lbRemain.AutoSize = true;
-            this.lbRemain.Location = new System.Drawing.Point(648, 342);
+            this.lbRemain.Location = new System.Drawing.Point(788, 382);
             this.lbRemain.Name = "lbRemain";
-            this.lbRemain.Size = new System.Drawing.Size(17, 18);
+            this.lbRemain.Size = new System.Drawing.Size(18, 20);
             this.lbRemain.TabIndex = 5;
             this.lbRemain.Text = "0";
             // 
             // btnUp
             // 
-            this.btnUp.Location = new System.Drawing.Point(809, 362);
+            this.btnUp.Location = new System.Drawing.Point(968, 364);
             this.btnUp.Name = "btnUp";
-            this.btnUp.Size = new System.Drawing.Size(39, 57);
+            this.btnUp.Size = new System.Drawing.Size(39, 63);
             this.btnUp.TabIndex = 6;
             this.btnUp.Text = "↑";
             this.btnUp.UseVisualStyleBackColor = true;
@@ -107,9 +107,9 @@
             // 
             // btnDown
             // 
-            this.btnDown.Location = new System.Drawing.Point(809, 483);
+            this.btnDown.Location = new System.Drawing.Point(968, 499);
             this.btnDown.Name = "btnDown";
-            this.btnDown.Size = new System.Drawing.Size(39, 57);
+            this.btnDown.Size = new System.Drawing.Size(39, 63);
             this.btnDown.TabIndex = 7;
             this.btnDown.Text = "↓";
             this.btnDown.UseVisualStyleBackColor = true;
@@ -117,9 +117,9 @@
             // 
             // btnRight
             // 
-            this.btnRight.Location = new System.Drawing.Point(855, 430);
+            this.btnRight.Location = new System.Drawing.Point(1014, 440);
             this.btnRight.Name = "btnRight";
-            this.btnRight.Size = new System.Drawing.Size(55, 39);
+            this.btnRight.Size = new System.Drawing.Size(55, 43);
             this.btnRight.TabIndex = 8;
             this.btnRight.Text = "→";
             this.btnRight.UseVisualStyleBackColor = true;
@@ -127,9 +127,9 @@
             // 
             // btnLeft
             // 
-            this.btnLeft.Location = new System.Drawing.Point(742, 430);
+            this.btnLeft.Location = new System.Drawing.Point(901, 440);
             this.btnLeft.Name = "btnLeft";
-            this.btnLeft.Size = new System.Drawing.Size(57, 39);
+            this.btnLeft.Size = new System.Drawing.Size(57, 43);
             this.btnLeft.TabIndex = 9;
             this.btnLeft.Text = "←";
             this.btnLeft.UseVisualStyleBackColor = true;
@@ -137,18 +137,18 @@
             // 
             // btnNote
             // 
-            this.btnNote.Location = new System.Drawing.Point(936, 93);
+            this.btnNote.Location = new System.Drawing.Point(1085, 98);
             this.btnNote.Name = "btnNote";
-            this.btnNote.Size = new System.Drawing.Size(57, 54);
+            this.btnNote.Size = new System.Drawing.Size(57, 60);
             this.btnNote.TabIndex = 13;
             this.btnNote.UseVisualStyleBackColor = true;
             this.btnNote.Click += new System.EventHandler(this.btnNote_Click);
             // 
             // btnSug
             // 
-            this.btnSug.Location = new System.Drawing.Point(901, 171);
+            this.btnSug.Location = new System.Drawing.Point(1050, 185);
             this.btnSug.Name = "btnSug";
-            this.btnSug.Size = new System.Drawing.Size(121, 45);
+            this.btnSug.Size = new System.Drawing.Size(121, 50);
             this.btnSug.TabIndex = 14;
             this.btnSug.Text = "Suggest";
             this.btnSug.UseVisualStyleBackColor = true;
@@ -157,9 +157,9 @@
             // btnFinalSug
             // 
             this.btnFinalSug.ForeColor = System.Drawing.Color.Red;
-            this.btnFinalSug.Location = new System.Drawing.Point(797, 705);
+            this.btnFinalSug.Location = new System.Drawing.Point(792, 679);
             this.btnFinalSug.Name = "btnFinalSug";
-            this.btnFinalSug.Size = new System.Drawing.Size(143, 63);
+            this.btnFinalSug.Size = new System.Drawing.Size(143, 70);
             this.btnFinalSug.TabIndex = 15;
             this.btnFinalSug.Text = "Final\r\nSuggest";
             this.btnFinalSug.UseVisualStyleBackColor = true;
@@ -167,20 +167,20 @@
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(18, 728);
-            this.textBox1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.textBox1.Location = new System.Drawing.Point(9, 738);
+            this.textBox1.Margin = new System.Windows.Forms.Padding(4);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
             this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox1.Size = new System.Drawing.Size(588, 132);
+            this.textBox1.Size = new System.Drawing.Size(588, 146);
             this.textBox1.TabIndex = 16;
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(614, 665);
-            this.button1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.button1.Location = new System.Drawing.Point(609, 635);
+            this.button1.Margin = new System.Windows.Forms.Padding(4);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(156, 34);
+            this.button1.Size = new System.Drawing.Size(156, 38);
             this.button1.TabIndex = 17;
             this.button1.Text = "messageSend";
             this.button1.UseVisualStyleBackColor = true;
@@ -188,39 +188,39 @@
             // 
             // textBox2
             // 
-            this.textBox2.Location = new System.Drawing.Point(633, 93);
-            this.textBox2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.textBox2.Location = new System.Drawing.Point(782, 98);
+            this.textBox2.Margin = new System.Windows.Forms.Padding(4);
             this.textBox2.Multiline = true;
             this.textBox2.Name = "textBox2";
             this.textBox2.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox2.Size = new System.Drawing.Size(243, 121);
+            this.textBox2.Size = new System.Drawing.Size(243, 134);
             this.textBox2.TabIndex = 18;
             // 
             // labelChat
             // 
             this.labelChat.AutoSize = true;
-            this.labelChat.Location = new System.Drawing.Point(15, 622);
+            this.labelChat.Location = new System.Drawing.Point(13, 634);
             this.labelChat.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.labelChat.Name = "labelChat";
-            this.labelChat.Size = new System.Drawing.Size(71, 18);
+            this.labelChat.Size = new System.Drawing.Size(74, 20);
             this.labelChat.TabIndex = 19;
             this.labelChat.Text = "message";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(630, 70);
+            this.label3.Location = new System.Drawing.Point(779, 73);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(44, 18);
+            this.label3.Size = new System.Drawing.Size(43, 20);
             this.label3.TabIndex = 20;
             this.label3.Text = "Card";
             // 
             // btnSaveLog
             // 
-            this.btnSaveLog.Location = new System.Drawing.Point(612, 735);
+            this.btnSaveLog.Location = new System.Drawing.Point(607, 713);
             this.btnSaveLog.Name = "btnSaveLog";
-            this.btnSaveLog.Size = new System.Drawing.Size(136, 33);
+            this.btnSaveLog.Size = new System.Drawing.Size(136, 37);
             this.btnSaveLog.TabIndex = 21;
             this.btnSaveLog.Text = "Save Log";
             this.btnSaveLog.UseVisualStyleBackColor = true;
@@ -229,20 +229,20 @@
             // labelCurrentPlayer
             // 
             this.labelCurrentPlayer.AutoSize = true;
-            this.labelCurrentPlayer.Location = new System.Drawing.Point(630, 14);
+            this.labelCurrentPlayer.Location = new System.Drawing.Point(779, 11);
             this.labelCurrentPlayer.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.labelCurrentPlayer.Name = "labelCurrentPlayer";
-            this.labelCurrentPlayer.Size = new System.Drawing.Size(71, 18);
+            this.labelCurrentPlayer.Size = new System.Drawing.Size(56, 20);
             this.labelCurrentPlayer.TabIndex = 22;
             this.labelCurrentPlayer.Text = "Player:";
             // 
             // labelDice2
             // 
             this.labelDice2.AutoSize = true;
-            this.labelDice2.Location = new System.Drawing.Point(662, 342);
+            this.labelDice2.Location = new System.Drawing.Point(767, 385);
             this.labelDice2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.labelDice2.Name = "labelDice2";
-            this.labelDice2.Size = new System.Drawing.Size(0, 18);
+            this.labelDice2.Size = new System.Drawing.Size(0, 20);
             this.labelDice2.TabIndex = 25;
             // 
             // moveTimer
@@ -251,20 +251,20 @@
             // 
             // pictureBoxDice2
             // 
-            this.pictureBoxDice2.Location = new System.Drawing.Point(687, 326);
-            this.pictureBoxDice2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.pictureBoxDice2.Location = new System.Drawing.Point(836, 364);
+            this.pictureBoxDice2.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBoxDice2.Name = "pictureBoxDice2";
-            this.pictureBoxDice2.Size = new System.Drawing.Size(46, 50);
+            this.pictureBoxDice2.Size = new System.Drawing.Size(46, 56);
             this.pictureBoxDice2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBoxDice2.TabIndex = 24;
             this.pictureBoxDice2.TabStop = false;
             // 
             // pictureBoxDice
             // 
-            this.pictureBoxDice.Location = new System.Drawing.Point(627, 326);
-            this.pictureBoxDice.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.pictureBoxDice.Location = new System.Drawing.Point(776, 364);
+            this.pictureBoxDice.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBoxDice.Name = "pictureBoxDice";
-            this.pictureBoxDice.Size = new System.Drawing.Size(51, 50);
+            this.pictureBoxDice.Size = new System.Drawing.Size(51, 56);
             this.pictureBoxDice.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBoxDice.TabIndex = 23;
             this.pictureBoxDice.TabStop = false;
@@ -272,27 +272,28 @@
             // pictureBox1
             // 
             this.pictureBox1.Image = global::clue_game6.Properties.Resources.fullmap;
-            this.pictureBox1.Location = new System.Drawing.Point(9, 9);
+            this.pictureBox1.Location = new System.Drawing.Point(9, 10);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(615, 600);
+            this.pictureBox1.Size = new System.Drawing.Size(750, 606);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox1.TabIndex = 4;
             this.pictureBox1.TabStop = false;
             // 
             // text_Chat
             // 
-            this.text_Chat.Location = new System.Drawing.Point(18, 656);
+            this.text_Chat.Location = new System.Drawing.Point(9, 658);
             this.text_Chat.Margin = new System.Windows.Forms.Padding(4);
             this.text_Chat.Multiline = true;
             this.text_Chat.Name = "text_Chat";
             this.text_Chat.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.text_Chat.Size = new System.Drawing.Size(588, 55);
+            this.text_Chat.Size = new System.Drawing.Size(588, 61);
             this.text_Chat.TabIndex = 26;
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1161, 883);
+            this.ClientSize = new System.Drawing.Size(1161, 1088);
             this.Controls.Add(this.text_Chat);
             this.Controls.Add(this.pictureBoxDice);
             this.Controls.Add(this.labelCurrentPlayer);

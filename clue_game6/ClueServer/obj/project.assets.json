@@ -55,23 +55,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Gina\\.nuget\\packages\\": {},
+    "C:\\Users\\tsoys\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Gina\\source\\fin\\ckdghks5179\\clue_final\\clue_game6\\ClueServer\\ClueServer.csproj",
+      "projectUniqueName": "C:\\Users\\tsoys\\Source\\Repos\\clue_final1\\clue_game6\\ClueServer\\ClueServer.csproj",
       "projectName": "ClueServer",
-      "projectPath": "C:\\Users\\Gina\\source\\fin\\ckdghks5179\\clue_final\\clue_game6\\ClueServer\\ClueServer.csproj",
-      "packagesPath": "C:\\Users\\Gina\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Gina\\source\\fin\\ckdghks5179\\clue_final\\clue_game6\\ClueServer\\obj\\",
+      "projectPath": "C:\\Users\\tsoys\\Source\\Repos\\clue_final1\\clue_game6\\ClueServer\\ClueServer.csproj",
+      "packagesPath": "C:\\Users\\tsoys\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\tsoys\\Source\\Repos\\clue_final1\\clue_game6\\ClueServer\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\Gina\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\tsoys\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -80,7 +80,6 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -99,7 +98,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.200"
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
       "net8.0": {
@@ -126,7 +125,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

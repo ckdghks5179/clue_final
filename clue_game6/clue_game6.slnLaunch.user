@@ -7,7 +7,7 @@
         "Action": "Start"
       },
       {
-        "Path": "..\\..\\..\\..\\..\\Desktop\\과제\\小组作业\\ClueServer\\ClueServer.csproj",
+        "Path": "ClueServer\\ClueServer.csproj",
         "Action": "Start"
       }
     ]

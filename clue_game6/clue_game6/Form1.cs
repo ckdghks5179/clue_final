@@ -62,6 +62,7 @@ namespace clue_game6
         private Player[] playerList => gameState.Players;
         private Player player;
 
+
         private int RollDice()
         {
             return rand.Next(1, 7);
@@ -107,7 +108,7 @@ namespace clue_game6
             byte[] buffer = new byte[1024];
             StringBuilder incomingData = new StringBuilder();
 
-            while (true) 
+            while (true)
             {
                 int bytes = stream.Read(buffer, 0, buffer.Length);
                 string chunk = Encoding.UTF8.GetString(buffer, 0, bytes);
@@ -118,8 +119,8 @@ namespace clue_game6
                     int newlineIndex = full.IndexOf('\n');
                     if (newlineIndex == -1) break;
 
-                    string msg = full.Substring(0, newlineIndex).Trim(); 
-                    incomingData.Remove(0, newlineIndex + 1); 
+                    string msg = full.Substring(0, newlineIndex).Trim();
+                    incomingData.Remove(0, newlineIndex + 1);
 
                     string[] parts = msg.Split('|');
 
@@ -164,10 +165,10 @@ namespace clue_game6
                     {
                         // 턴 전달 처리
                         int index = int.Parse(parts[1]);
-                       this.Invoke((MethodInvoker)(() =>
-                        {
-                            SetTurn(index);
-                        }));
+                        this.Invoke((MethodInvoker)(() =>
+                         {
+                             SetTurn(index);
+                         }));
 
                     }
                     else if (parts[0] == "SUGGEST_REPLY")
@@ -272,6 +273,7 @@ namespace clue_game6
                             }
                         }));
                     }
+
                     else if (!msg.Contains("|"))
                     {
                         this.Invoke((MethodInvoker)(() =>
@@ -279,9 +281,29 @@ namespace clue_game6
                             textBox1.AppendText(msg + "\r\n");
                         }));
                     }
+                    else if (parts[0] == "PLAYER_ACTION" && parts.Length >= 4)
+                    {
+                        int actionPlayerId = int.Parse(parts[1]);
+                        string playerName = parts[2];
+                        string action = parts[3];
+
+                        // Only display if it's NOT from the current player (to avoid duplicates)
+                        if (actionPlayerId != playerId)
+                        {
+                            this.Invoke((MethodInvoker)(() =>
+                            {
+                                textBox1.AppendText($"🎮 {playerName}: {action}\r\n");
+                                textBox1.ScrollToCaret();
+                            }));
+                        }
+                    }
                 }
             }
         }
+
+
+
+
         /// ///////////////////
         private void UpdateControlState()
         {
@@ -306,7 +328,7 @@ namespace clue_game6
 
         public void UpdatePlayerPositions()
         {
-            int cellSize = 36;
+            int cellSize = 32;
             int boxSize = 16;
 
             for (int i = 0; i < gameState.TotalPlayers; i++)
@@ -343,7 +365,7 @@ namespace clue_game6
             pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
 
             // ===== playerBox 생성 및 위치 설정 =====
-            int cellSize = 36;
+            int cellSize = 33;
             int boxSize = 16;
 
             for (int i = 0; i < gameState.TotalPlayers; i++)
@@ -362,7 +384,7 @@ namespace clue_game6
                 Point cellPoint = gameState.clue_map_point[p.x, p.y];
                 playerBox.Location = new Point(
                     cellPoint.X + cellSize / 2 - boxSize / 2,
-                    cellPoint.Y  - boxSize / 2
+                    cellPoint.Y - boxSize / 2
                 );
 
                 playerBoxes[i] = playerBox;
@@ -401,6 +423,7 @@ namespace clue_game6
             // ===== 창 크기 및 온라인 수신 시작 =====
             this.ClientSize = new Size(800, 550);
             if (isNetworkMode) StartListening();
+
         }
 
 
@@ -431,13 +454,14 @@ namespace clue_game6
             playerSound.Play();
 
             btnTurnEnd.Enabled = true;
-
             btnUp.Enabled = true;
             btnDown.Enabled = true;
             btnLeft.Enabled = true;
             btnRight.Enabled = true;
 
             player.hasRolled = true;
+
+            BroadcastPlayerAction($"주사위를 굴렸습니다! 🎲 ({finalDice1} + {finalDice2} = {total})");
         }
         private void DiceTimer_Tick(object sender, EventArgs e)
         {
@@ -447,7 +471,7 @@ namespace clue_game6
 
             pictureBoxDice.Image = diceImages[temp1 - 1];
             pictureBoxDice2.Image = diceImages[temp2 - 1];
-            if(animationCounter >= 10)
+            if (animationCounter >= 10)
             {
                 diceTimer.Stop();
                 pictureBoxDice.Image = diceImages[finalDice1 - 1];
@@ -513,6 +537,15 @@ namespace clue_game6
             isMoving = true;
             movingPlayerBox = playerBoxes[playerId];
 
+            // Broadcast move action to chat
+            string direction = "";
+            if (dx == -1) direction = "위로";
+            else if (dx == 1) direction = "아래로";
+            else if (dy == 1) direction = "오른쪽으로";
+            else if (dy == -1) direction = "왼쪽으로";
+
+            BroadcastPlayerAction($"{direction} 이동했습니다. (남은 이동: {remainingSteps - 1})");
+
             Console.WriteLine($"[TryMove] 이동 시작 - 타겟: {targetPosition}, 논리 위치: ({newX}, {newY})");
 
             moveTimer.Start();
@@ -527,7 +560,7 @@ namespace clue_game6
             {
                 byte[] data = Encoding.UTF8.GetBytes(msg + "\n");
                 stream.Write(data, 0, data.Length);
-                
+
             }
             else
             {
@@ -549,18 +582,18 @@ namespace clue_game6
         public void SetTurn(int index)
         {
             gameState.CurrentTurn = index;
-            lbRemain.Text = "0"; 
+            lbRemain.Text = "0";
 
+            string turnPlayer = gameState.Players[index].name;
+            BroadcastLogToAllForms($"🎯 {turnPlayer}의 턴입니다!");
 
             if (playerId == index)
             {
                 player.hasRolled = false;
                 btnRoll.Enabled = true;
                 player.hasSuggested = false;
-
                 lbRemain.Text = "0";
                 MessageBox.Show("당신의 턴입니다!");
-
                 btnTurnEnd.Enabled = false;
             }
             else
@@ -569,7 +602,7 @@ namespace clue_game6
                 btnRoll.Enabled = false;
                 btnTurnEnd.Enabled = false;
             }
-            
+
             UpdateControlState();
         }
 
@@ -601,13 +634,15 @@ namespace clue_game6
 
         private void btnTurnEnd_Click(object sender, EventArgs e)
         {
-            // Gina온라인 모드
+            // Broadcast turn end action FIRST
+            BroadcastPlayerAction("턴을 종료했습니다.");
+
+            // Small delay to ensure chat message is sent before turn end
             if (isNetworkMode)
             {
                 if (stream != null && stream.CanWrite)
                 {
-                   
-                    Thread.Sleep(50); 
+                    Thread.Sleep(100); // Increased delay to ensure message order
                     SendMessage($"END_TURN|{playerId}");
                 }
             }
@@ -618,7 +653,7 @@ namespace clue_game6
                 player.hasRolled = false;
 
                 gameState.AdvanceTurn();
-            foreach (var form in PlayerChoose.AllPlayerForms)
+                foreach (var form in PlayerChoose.AllPlayerForms)
                 {
                     form.UpdateControlState();
                     form.UpdatePlayerPositions();
@@ -627,6 +662,7 @@ namespace clue_game6
             }
         }
 
+
         private void btnNote_Click(object sender, EventArgs e)
         {
             notePad = new Form2(player, gameState);
@@ -634,17 +670,24 @@ namespace clue_game6
         }
 
         private void btnSug_Click(object sender, EventArgs e)
-        {        
+        {
             if (player.hasSuggested)
             {
                 MessageBox.Show("이미 추리를 했습니다.");
                 return;
             }
-            // Gina온라인 모드
+
+            BroadcastPlayerAction("추리를 시작합니다... 🔍");
+
             if (isNetworkMode)
+            {
+                Thread.Sleep(50);
                 suggest = new Form3(gameState, player, 1, playerId, true, stream);
+            }
             else
+            {
                 suggest = new Form3(gameState, player, 1, playerId);
+            }
 
             suggest.Show();
             player.hasSuggested = true;
@@ -652,11 +695,15 @@ namespace clue_game6
 
         private void btnFinalSug_Click(object sender, EventArgs e)
         {
-            //  Gina온라인 모드
             if (isNetworkMode)
+            {
+                Thread.Sleep(50);
                 suggest = new Form3(gameState, player, 2, playerId, true, stream);
+            }
             else
+            {
                 suggest = new Form3(gameState, player, 2, playerId);
+            }
             suggest.Show();
         }
 
@@ -669,7 +716,7 @@ namespace clue_game6
                 if (!string.IsNullOrEmpty(chat))
                 {
                     SendMessage($"CHAT|{player.name}|{chat}");
-                    text_Chat.Clear(); 
+                    text_Chat.Clear();
                 }
                 Console.WriteLine($"💬 [发送测试] {player.name}: {chat}");
             }
@@ -715,7 +762,7 @@ namespace clue_game6
                 gameState.SaveLogToFile(saveFileDialog.FileName);
             }
         }
-         
+
         private void UpdateCurrentPlayerLabel()
         {
             int current = gameState.CurrentTurn;
@@ -763,44 +810,68 @@ namespace clue_game6
                 // clue_map 업데이트
                 if (gameState.clue_map[player.x, player.y] != 2 && gameState.clue_map[player.x, player.y] != 5)
                 {
-                    gameState.clue_map[player.x, player.y] = 0; // 이전 위치 초기화
+                    gameState.clue_map[player.x, player.y] = 0;
                 }
                 gameState.clue_map[newX, newY] = 3;
 
-                // 방 판정 (열, 행 순서)
+                // Room detection with chat notification
                 Point dest = new Point(player.y, player.x);
+                bool wasInRoom = player.isInRoom;
+                bool wasInFinalRoom = player.isFinalRoom;
+
                 if (gameState.roomTiles.Contains(dest) || gameState.clue_map[newX, newY] == 2)
                 {
                     player.isInRoom = true;
                     player.isFinalRoom = false;
+                    if (!wasInRoom && !wasInFinalRoom)
+                    {
+                        BroadcastPlayerAction("🏠 방에 입장했습니다!");
+                    }
                     Console.WriteLine("[moveTimer_Tick] 일반 방 진입");
                 }
                 else if (gameState.finalRoomTiles.Contains(dest) || gameState.clue_map[newX, newY] == 5)
                 {
                     player.isInRoom = false;
                     player.isFinalRoom = true;
+                    if (!wasInFinalRoom && !wasInRoom)
+                    {
+                        BroadcastPlayerAction("🎯 최종 방에 입장했습니다!");
+                    }
                     Console.WriteLine("[moveTimer_Tick] 최종 방 진입");
                 }
                 else
                 {
                     player.isInRoom = false;
                     player.isFinalRoom = false;
+                    if (wasInRoom || wasInFinalRoom)
+                    {
+                        BroadcastPlayerAction("🚶 방에서 나왔습니다.");
+                    }
                     Console.WriteLine("[moveTimer_Tick] 방이 아님");
                 }
 
-                // 위치 반영 및 UI 갱신
-                foreach (var form in PlayerChoose.AllPlayerForms)
+                // Update positions for all forms
+                if (isNetworkMode)
                 {
-                    form.gameState.Players[playerId].x = newX;
-                    form.gameState.Players[playerId].y = newY;
-
-                    if (form.playerBoxes.ContainsKey(playerId))
+                    // Send position update to server
+                    SendMessage($"MOVE|{playerId}|{newX}|{newY}");
+                }
+                else
+                {
+                    // Update local game state
+                    foreach (var form in PlayerChoose.AllPlayerForms)
                     {
-                        form.playerBoxes[playerId].Location = form.gameState.clue_map_point[newX, newY];
-                    }
+                        form.gameState.Players[playerId].x = newX;
+                        form.gameState.Players[playerId].y = newY;
 
-                    form.UpdatePlayerPositions();
-                    form.UpdateControlState(); // 방 진입 여부에 따라 추리 버튼 활성화
+                        if (form.playerBoxes.ContainsKey(playerId))
+                        {
+                            form.playerBoxes[playerId].Location = form.gameState.clue_map_point[newX, newY];
+                        }
+
+                        form.UpdatePlayerPositions();
+                        form.UpdateControlState();
+                    }
                 }
 
                 remainingSteps--;
@@ -813,6 +884,7 @@ namespace clue_game6
                     btnDown.Enabled = false;
                     btnLeft.Enabled = false;
                     btnRight.Enabled = false;
+                    BroadcastPlayerAction("이동을 완료했습니다.");
                 }
 
                 isMoving = false;
@@ -820,13 +892,13 @@ namespace clue_game6
                 return;
             }
 
-            // 애니메이션 이동
+            // Animation movement
             if (dx != 0)
                 movingPlayerBox.Left += stepSize * Math.Sign(dx);
             if (dy != 0)
                 movingPlayerBox.Top += stepSize * Math.Sign(dy);
 
-            // 안전장치: 너무 오래 반복되면 강제 종료
+            // Safety mechanism
             moveStepCounter++;
             if (moveStepCounter > 60)
             {
@@ -980,6 +1052,34 @@ namespace clue_game6
 
                 btn.Top = originalTops[btn] + currentOffset;
                 currentOffsets[btn] = currentOffset;
+            }
+        }
+        private void BroadcastPlayerAction(string action)
+        {
+            string localMessage = $"🎮 {player.name}: {action}";
+            textBox1.AppendText(localMessage + "\r\n");
+            textBox1.ScrollToCaret(); // Scroll to the bottom to show the latest message
+
+            if (isNetworkMode)
+            {
+                // Send to server for other players
+                string message = $"PLAYER_ACTION|{playerId}|{player.name}|{action}";
+                SendMessage(message);
+            }
+            else
+            {
+                // For offline mode, also broadcast to all other forms
+                foreach (var form in PlayerChoose.AllPlayerForms)
+                {
+                    if (form != this) // Don't duplicate on the current form
+                    {
+                        form.Invoke(new Action(() =>
+                        {
+                            form.textBox1.AppendText(localMessage + "\r\n");
+                            form.textBox1.ScrollToCaret();
+                        }));
+                    }
+                }
             }
         }
     }
