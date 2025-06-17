@@ -44,7 +44,6 @@ namespace clue_game6
         private int animationCounter;
         private int finalDice1;
         private int finalDice2;
-        float currentX, currentY;
 
         private Dictionary<Button, System.Windows.Forms.Timer> hoverTimers = new Dictionary<Button, System.Windows.Forms.Timer>();
         private Dictionary<Button, int> originalTops = new Dictionary<Button, int>();
@@ -59,23 +58,10 @@ namespace clue_game6
         private int playerId;
         private PictureBox myPlayerBox;
         private Dictionary<int, PictureBox> playerBoxes = new Dictionary<int, PictureBox>();
-        //private Point[,] clue_map_point;
-        private int[,] clue_map => gameState.clue_map;
 
         private Player[] playerList => gameState.Players;
         private Player player;
-        List<Card> cardList = new List<Card>();
 
-        //int currentTurnPlayer = 0;
-
-        List<string> mans = new List<string>();
-        List<string> weapons = new List<string>();
-        List<string> rooms = new List<string>();
-
-        string[] man = { "Green", "Mustard", "Peacock", "Plum", "Scarlett", "White" };
-        string[] weapon = { "촛대", "파이프", "리볼버", "밧줄", "렌치", "단검" };
-        string[] room = { "주방", "공부방", "무도회장", "온실", "식당", "당구장", "서재", "라운지", "홀" };
-        
         private int RollDice()
         {
             return rand.Next(1, 7);
@@ -320,19 +306,30 @@ namespace clue_game6
 
         public void UpdatePlayerPositions()
         {
+            int cellSize = 36;
+            int boxSize = 16;
 
             for (int i = 0; i < gameState.TotalPlayers; i++)
             {
                 var p = gameState.Players[i];
+
                 if (playerBoxes.ContainsKey(i))
                 {
-                    playerBoxes[i].Location = gameState.clue_map_point[p.x, p.y];
+                    PictureBox playerBox = playerBoxes[i];
+
+                    Point cellPoint = gameState.clue_map_point[p.x, p.y];
+                    playerBox.Location = new Point(
+                        cellPoint.X + cellSize / 2 - boxSize / 2,
+                        cellPoint.Y - boxSize / 2
+                    );
                 }
             }
         }
         private void Form1_Load(object sender, EventArgs e)
         {
             this.Text = $"Clue Game - Player {playerId + 1} ({player.name})";
+
+            // 플레이어 카드 표시
             for (int i = 0; i < player.hands.Count(); i++)
             {
                 textBox2.Text += "<" + player.hands[i].type + ">" + " " + player.hands[i].name + "\r\n";
@@ -342,7 +339,13 @@ namespace clue_game6
             {
                 textBox2.Text += "<" + gameState.openCard[i].type + ">" + " " + gameState.openCard[i].name + "\r\n";
             }
+
             pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
+
+            // ===== playerBox 생성 및 위치 설정 =====
+            int cellSize = 36;
+            int boxSize = 16;
+
             for (int i = 0; i < gameState.TotalPlayers; i++)
             {
                 Player p = gameState.Players[i];
@@ -350,24 +353,29 @@ namespace clue_game6
                 PictureBox playerBox = new PictureBox
                 {
                     Name = $"playerBox{i}",
-                    Size = new Size(20, 20),
-                    BackColor = GetPlayerColor(i), // 각 플레이어마다 다른 색상
-                    Location = gameState.clue_map_point[p.x, p.y],
-                    SizeMode = PictureBoxSizeMode.StretchImage
+                    Size = new Size(boxSize, boxSize),
+                    BackColor = GetPlayerColor(i),
+                    SizeMode = PictureBoxSizeMode.StretchImage,
+                    BorderStyle = BorderStyle.FixedSingle
                 };
 
+                Point cellPoint = gameState.clue_map_point[p.x, p.y];
+                playerBox.Location = new Point(
+                    cellPoint.X + cellSize / 2 - boxSize / 2,
+                    cellPoint.Y  - boxSize / 2
+                );
+
                 playerBoxes[i] = playerBox;
-
                 this.Controls.Add(playerBox);
-
-
                 playerBox.BringToFront();
-                //현재 Form이 담당하는 플레이어라면 저장
+
                 if (i == playerId)
                 {
                     myPlayerBox = playerBox;
                 }
             }
+
+            // ===== 주사위 이미지 배열 설정 =====
             diceImages = new Image[]
             {
                 Properties.Resources.dice_1_icon,
@@ -377,21 +385,33 @@ namespace clue_game6
                 Properties.Resources.dice_5_icon,
                 Properties.Resources.dice_6_icon
             };
+
+            // ===== 주사위 애니메이션 타이머 설정 =====
             diceTimer = new System.Windows.Forms.Timer();
             diceTimer.Interval = 100;
             diceTimer.Tick += DiceTimer_Tick;
 
+            // ===== 이동 타이머 이벤트 연결
+            moveTimer.Tick += moveTimer_Tick;
+
+            // ===== 초기 UI 상태 갱신 =====
             UpdateControlState();
             UpdateCurrentPlayerLabel();
-            UpdateControlState();
-            this.ClientSize = new Size(800, 550); //창 키울 필요 없게
 
-            // Gina온라인 모드
+            // ===== 창 크기 및 온라인 수신 시작 =====
+            this.ClientSize = new Size(800, 550);
             if (isNetworkMode) StartListening();
         }
 
+
         private void btnRoll_Click(object sender, EventArgs e)
         {
+            if (player.hasRolled)
+            {
+                MessageBox.Show("이미 주사위를 굴렸습니다.");
+                return;
+            }
+
             finalDice1 = RollDice();
             finalDice2 = RollDice();
             int total = finalDice1 + finalDice2;
@@ -404,13 +424,11 @@ namespace clue_game6
             dice1.Text = finalDice1.ToString();
             labelDice2.Text = finalDice2.ToString();
 
-
             btnRoll.Enabled = false;
             pictureBoxDice.Image = GetDiceImage(finalDice1);
             pictureBoxDice2.Image = GetDiceImage(finalDice2);
-            System.Media.SoundPlayer player = new System.Media.SoundPlayer(Properties.Resources.dice_142528);
-            player.Play();
-            remainingSteps = total;
+            System.Media.SoundPlayer playerSound = new System.Media.SoundPlayer(Properties.Resources.dice_142528);
+            playerSound.Play();
 
             btnTurnEnd.Enabled = true;
 
@@ -418,6 +436,8 @@ namespace clue_game6
             btnDown.Enabled = true;
             btnLeft.Enabled = true;
             btnRight.Enabled = true;
+
+            player.hasRolled = true;
         }
         private void DiceTimer_Tick(object sender, EventArgs e)
         {
@@ -450,98 +470,52 @@ namespace clue_game6
 
         private void TryMove(int dx, int dy)
         {
+            Console.WriteLine($"[TryMove] 시작 - remainingSteps: {remainingSteps}, isMoving: {isMoving}");
 
             if (isMoving)
+            {
+                Console.WriteLine("[TryMove] 현재 이동 중이므로 이동 불가.");
                 return;
-            if (remainingSteps <= 0) return;
+            }
+
+            if (remainingSteps <= 0)
+            {
+                Console.WriteLine("[TryMove] 남은 이동 횟수가 0 이하이므로 이동 불가.");
+                return;
+            }
 
             int newX = player.x + dx;
             int newY = player.y + dy;
 
-            if (newX < 0 || newX >= 25 || newY < 0 || newY >= 24) return;
-            if (gameState.clue_map[newX, newY] == 1) return; // 벽이면 막음
+            if (newX < 0 || newX >= 25 || newY < 0 || newY >= 24)
+            {
+                Console.WriteLine($"[TryMove] 좌표 범위 초과: ({newX}, {newY})");
+                return;
+            }
 
-            // 다른 플레이어가 해당 좌표에 있는 경우 이동 금지
+            if (gameState.clue_map[newX, newY] == 1)
+            {
+                Console.WriteLine($"[TryMove] 벽에 막힘: clue_map[{newX}, {newY}] == 1");
+                return;
+            }
+
             foreach (var other in gameState.Players)
             {
                 if (other != player && other.x == newX && other.y == newY)
+                {
+                    Console.WriteLine($"[TryMove] 다른 플레이어가 해당 위치({newX}, {newY})에 있음");
                     return;
+                }
             }
-            // player animation 
-           
+
             nextLogicalPosition = new Point(newX, newY);
             targetPosition = gameState.clue_map_point[newX, newY];
             isMoving = true;
             movingPlayerBox = playerBoxes[playerId];
+
+            Console.WriteLine($"[TryMove] 이동 시작 - 타겟: {targetPosition}, 논리 위치: ({newX}, {newY})");
+
             moveTimer.Start();
-
-            //방 진입 , 최종 방 진입 여부 판정
-            Point dest = new Point(newY, newX); // 열, 행 순서
-
-            // 방 입구 좌표일 경우 방 진입
-            if (gameState.roomTiles.Contains(dest) || gameState.clue_map[newX, newY] == 2)
-            {
-                player.isInRoom = true;
-                player.isFinalRoom = false;
-                lbRemain.Text = "1";
-            }
-            //최종 추리 방 입구
-            else if (gameState.finalRoomTiles.Contains(dest) || gameState.clue_map[newX, newY] == 5)
-            {
-                player.isInRoom = false;
-                player.isFinalRoom = true;
-                lbRemain.Text = "1";
-            }
-            else
-            {
-                player.isInRoom = false;
-                player.isFinalRoom = false;
-            }
-
-
-            // 이전 위치가 방이면 clue_map을 2로, 아니면 0으로 되돌림
-            if (gameState.clue_map[player.x, player.y] == 2 || gameState.clue_map[player.x, player.y] == 5)
-                gameState.clue_map[player.x, player.y] = gameState.clue_map[player.x, player.y]; // 그대로 유지
-            else
-                gameState.clue_map[player.x, player.y] = 0;
-
-            // 이동 및 좌표 업데이트
-           
-            playerBoxes[playerId].Location = gameState.clue_map_point[newX, newY];
-            foreach (var form in PlayerChoose.AllPlayerForms)
-            {
-                form.gameState.Players[playerId].x = newX;
-                form.gameState.Players[playerId].y = newY;
-                if (form.playerBoxes.ContainsKey(playerId))
-                {
-                    form.playerBoxes[playerId].Location = form.gameState.clue_map_point[newX, newY];
-                }
-
-            gameState.clue_map[newX, newY] = 3;
-            playerBoxes[playerId].Location = gameState.clue_map_point[newX, newY];
-
-            // 이동 횟수 감소
-            lbRemain.Text = (int.Parse(lbRemain.Text) - 1).ToString();
-
-                // 위치 및 버튼 상태 갱신
-                foreach (var playerForm in PlayerChoose.AllPlayerForms)
-                {
-                    playerForm.UpdatePlayerPositions();
-
-                    // ✔ 단일 모드거나, 본인의 폼이면 버튼 상태 갱신
-                    if (!isNetworkMode || playerForm.playerId == this.playerId)
-                    {
-                        playerForm.UpdateControlState();
-                    }
-                }
-
-            }
-              //gina온라인 모드   
-            if (isNetworkMode && stream != null && stream.CanWrite)
-            {
-
-                SendMessage($"MOVE|{playerId}|{newX}|{newY}");
-            }
         }
         /// <summary>
         /// gina온라인 모드 방송 정보
@@ -574,13 +548,6 @@ namespace clue_game6
         //gina
         public void SetTurn(int index)
         {
-            //gameState.CurrentTurn = index;
-            //if (playerId == index)
-            //{
-            //    MessageBox.Show("당신의 턴입니다!", "Turn", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            //}
-
-            //UpdateControlState();
             gameState.CurrentTurn = index;
             lbRemain.Text = "0"; 
 
@@ -588,11 +555,12 @@ namespace clue_game6
             if (playerId == index)
             {
                 player.hasRolled = false;
+                btnRoll.Enabled = true;
                 player.hasSuggested = false;
 
                 lbRemain.Text = "0";
                 MessageBox.Show("당신의 턴입니다!");
-                btnRoll.Enabled = true;
+
                 btnTurnEnd.Enabled = false;
             }
             else
@@ -609,7 +577,6 @@ namespace clue_game6
         {
 
             TryMove(-1, 0);
-
 
         }
         private void btnDown_Click(object sender, EventArgs e)
@@ -646,13 +613,11 @@ namespace clue_game6
             }
             else
             {
-               
-            btnRoll.Enabled = true;
-            lbRemain.Text = "0";
-            player.hasRolled = false;
-            player.hasSuggested = false;
+                lbRemain.Text = "0";
+                player.hasSuggested = false;
+                player.hasRolled = false;
 
-            gameState.AdvanceTurn();
+                gameState.AdvanceTurn();
             foreach (var form in PlayerChoose.AllPlayerForms)
                 {
                     form.UpdateControlState();
@@ -751,11 +716,6 @@ namespace clue_game6
             }
         }
          
-        private void pictureBox1_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void UpdateCurrentPlayerLabel()
         {
             int current = gameState.CurrentTurn;
@@ -770,10 +730,15 @@ namespace clue_game6
             targetPosition = destination;
             moveTimer.Start();
         }
+        private int moveStepCounter = 0;
+
         private void moveTimer_Tick(object sender, EventArgs e)
         {
+            Console.WriteLine("[moveTimer_Tick] 호출됨");
+
             if (movingPlayerBox == null)
             {
+                Console.WriteLine("[moveTimer_Tick] movingPlayerBox가 null → 중지");
                 moveTimer.Stop();
                 isMoving = false;
                 return;
@@ -784,16 +749,46 @@ namespace clue_game6
 
             if (Math.Abs(dx) <= stepSize && Math.Abs(dy) <= stepSize)
             {
+                Console.WriteLine("[moveTimer_Tick] 목표 위치 도달");
 
                 movingPlayerBox.Left = targetPosition.X;
                 movingPlayerBox.Top = targetPosition.Y;
                 moveTimer.Stop();
 
-
                 int newX = nextLogicalPosition.X;
                 int newY = nextLogicalPosition.Y;
                 player.x = newX;
                 player.y = newY;
+
+                // clue_map 업데이트
+                if (gameState.clue_map[player.x, player.y] != 2 && gameState.clue_map[player.x, player.y] != 5)
+                {
+                    gameState.clue_map[player.x, player.y] = 0; // 이전 위치 초기화
+                }
+                gameState.clue_map[newX, newY] = 3;
+
+                // 방 판정 (열, 행 순서)
+                Point dest = new Point(player.y, player.x);
+                if (gameState.roomTiles.Contains(dest) || gameState.clue_map[newX, newY] == 2)
+                {
+                    player.isInRoom = true;
+                    player.isFinalRoom = false;
+                    Console.WriteLine("[moveTimer_Tick] 일반 방 진입");
+                }
+                else if (gameState.finalRoomTiles.Contains(dest) || gameState.clue_map[newX, newY] == 5)
+                {
+                    player.isInRoom = false;
+                    player.isFinalRoom = true;
+                    Console.WriteLine("[moveTimer_Tick] 최종 방 진입");
+                }
+                else
+                {
+                    player.isInRoom = false;
+                    player.isFinalRoom = false;
+                    Console.WriteLine("[moveTimer_Tick] 방이 아님");
+                }
+
+                // 위치 반영 및 UI 갱신
                 foreach (var form in PlayerChoose.AllPlayerForms)
                 {
                     form.gameState.Players[playerId].x = newX;
@@ -805,54 +800,41 @@ namespace clue_game6
                     }
 
                     form.UpdatePlayerPositions();
-                    form.UpdateControlState();
+                    form.UpdateControlState(); // 방 진입 여부에 따라 추리 버튼 활성화
                 }
+
                 remainingSteps--;
                 lbRemain.Text = remainingSteps.ToString();
+                Console.WriteLine($"[moveTimer_Tick] 남은 이동: {remainingSteps}");
 
-                if (gameState.clue_map[newX, newY] == 2)
+                if (remainingSteps <= 0)
                 {
-                    player.isInRoom = true;
-                    btnSug.Enabled = true;
-
-                }
-                else if (gameState.clue_map[newX, newY] == 5)
-                {
-                    player.isFinalRoom = true;
-                    btnFinalSug.Enabled = true;
-
-                }
-                else
-                {
-                    player.isInRoom = false;
-                }
-
-
-                if (gameState.clue_map[player.x, player.y] == 2)
-                    gameState.clue_map[player.x, player.y] = 2;
-                else
-                    gameState.clue_map[player.x, player.y] = 0;
-
-                player.x = newX;
-                player.y = newY;
-                gameState.clue_map[newX, newY] = 3;
-
-
-
-                foreach (var form in PlayerChoose.AllPlayerForms)
-                {
-                    form.UpdatePlayerPositions();
+                    btnUp.Enabled = false;
+                    btnDown.Enabled = false;
+                    btnLeft.Enabled = false;
+                    btnRight.Enabled = false;
                 }
 
                 isMoving = false;
+                moveStepCounter = 0;
                 return;
             }
 
-
+            // 애니메이션 이동
             if (dx != 0)
                 movingPlayerBox.Left += stepSize * Math.Sign(dx);
             if (dy != 0)
                 movingPlayerBox.Top += stepSize * Math.Sign(dy);
+
+            // 안전장치: 너무 오래 반복되면 강제 종료
+            moveStepCounter++;
+            if (moveStepCounter > 60)
+            {
+                Console.WriteLine("[moveTimer_Tick] 무한 이동 감지 → 강제 종료");
+                moveTimer.Stop();
+                isMoving = false;
+                moveStepCounter = 0;
+            }
         }
 
         private void ApplyDetectiveStyle()
