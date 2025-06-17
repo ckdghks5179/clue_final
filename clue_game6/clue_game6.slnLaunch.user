@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "新建配置文件",
+    "Projects": [
+      {
+        "Path": "clue_game6\\clue_game6.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "..\\..\\..\\..\\..\\Desktop\\과제\\小组作业\\ClueServer\\ClueServer.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
