@@ -719,11 +719,18 @@ namespace clue_game6
         private void UpdateCurrentPlayerLabel()
         {
             int current = gameState.CurrentTurn;
-            labelCurrentPlayer.Text = $"Current Player: {current + 1}";
-            if (current == playerId)
-                labelCurrentPlayer.ForeColor = Color.Green;
+
+            if (isNetworkMode)
+            {
+                string currentName = gameState.Players[current].name;
+                labelCurrentPlayer.Text = $"Current Player:{playerId + 1} [{gameState.Players[playerId].name}]";
+            }
             else
-                labelCurrentPlayer.ForeColor = Color.Black;
+            {
+                labelCurrentPlayer.Text = $"Current Player: {current + 1}";
+            }
+
+            labelCurrentPlayer.ForeColor = (current == playerId) ? Color.Green : Color.Black;
         }
         void MovePlayerTo(Point destination)
         {
