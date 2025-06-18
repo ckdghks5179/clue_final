@@ -120,48 +120,7 @@ namespace clue_game6
                             MessageBox.Show("게임 시작 중 오류 발생: " + ex.Message, "에러", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
-                    //else if (msg.StartsWith("TURN|"))
-                    //{
-                    //    string turnStr = msg.Substring("TURN|".Length);
-                    //    if (int.TryParse(turnStr, out int turnIndex))
-                    //    {
-                    //        this.Invoke(new MethodInvoker(delegate
-                    //        {
-                    //            if (this.Owner is Form1 gameForm)
-                    //            {
-                    //                gameForm.SetTurn(turnIndex);
-                    //            }
-                    //        }));
-                    //    }
-                    //}
-                    //else if (msg.StartsWith("MOVE|"))
-                    //{
-                    //    string[] parts = msg.Split('|');
-                    //    if (parts.Length == 4 &&
-                    //        int.TryParse(parts[1], out int moveId) &&
-                    //        int.TryParse(parts[2], out int x) &&
-                    //        int.TryParse(parts[3], out int y))
-                    //    {
-                    //        this.Invoke(new MethodInvoker(delegate
-                    //        {
-                    //            if (this.Owner is Form1 gameForm)
-                    //            {
-                    //                gameForm.MovePlayerExternally(moveId, x, y);
-                    //            }
-                    //        }));
-                    //    }
-                    //}
-                    //else if (msg.StartsWith("SUGGEST|"))
-                    //{
-                    //    string suggestionText = msg.Substring("SUGGEST|".Length);
-                    //    this.Invoke(new MethodInvoker(() =>
-                    //    {
-                    //        if (Application.OpenForms["Form1"] is Form1 gameForm)
-                    //        {
-                    //            gameForm.ShowSuggestionMessage(suggestionText);
-                    //        }
-                    //    }));
-                    //}
+                    
                     else if (msg.StartsWith("PLAYER_COUNT|"))
                     {
                         string countStr = msg.Substring("PLAYER_COUNT|".Length);

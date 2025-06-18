@@ -18,7 +18,7 @@ namespace ClueServer
             };
 
             // 初始坐标（与你客户端保持一致）
-            int[] initialX = { 7, 17, 24, 0, 6, 19 };
+            int[] initialX = { 6, 16, 23, 0, 5, 18 };
             int[] initialY = { 0, 0, 7, 14, 23, 23 };
 
             for (int i = 0; i < playerCount; i++)
@@ -50,6 +50,11 @@ namespace ClueServer
 
         private static List<List<MyPoint>> GenerateMap()
         {
+            int originX = 16;
+            int originY = 4;
+            int cellWidth = 23;
+            int cellHeight = 15;
+
             var map = new List<List<MyPoint>>();
             for (int row = 0; row < 25; row++)
             {
@@ -58,8 +63,8 @@ namespace ClueServer
                 {
                     rowList.Add(new MyPoint
                     {
-                        X = 8 + col * 20,
-                        Y = 8 + row * 16
+                        X = originX + col * cellWidth + cellWidth / 2,
+                        Y = originY + row * cellHeight + cellHeight / 2
                     });
                 }
                 map.Add(rowList);

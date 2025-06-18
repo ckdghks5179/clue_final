@@ -70,7 +70,6 @@ namespace clue_game6
         {
                 { 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
                 { 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1},
-                { 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1},
                 { 1, 1, 1, 4, 1, 1, 0, 0, 1, 1, 1, 4, 1, 1, 1, 1, 0, 0, 1, 1, 1, 4, 1, 1},
                 { 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1},
                 { 1, 1, 1, 1, 1, 1, 0, 0, 2, 1, 1, 1, 1, 1, 1, 2, 0, 0, 0, 2, 1, 1, 1, 1},
@@ -92,20 +91,26 @@ namespace clue_game6
                 { 1, 1, 1, 4, 1, 1, 1, 0, 0, 1, 1, 1, 4, 1, 1, 0, 0, 1, 2, 1, 1, 1, 1, 1},
                 { 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1},
                 { 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 4, 1, 1},
-                { 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1}
+                { 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1},
+                { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+
+
         };
 
         public List<Point> roomTiles = new List<Point> //문 좌표
         {
-            new Point(8, 5), new Point(15, 5), new Point(19, 5), new Point(4, 6), new Point(9, 7),
-            new Point(14, 7), new Point(18, 9), new Point(7, 12), new Point(22, 12), new Point(20, 14),
-            new Point(6, 15), new Point(17, 16), new Point(11, 18),new Point(12, 18), new Point(5, 19),
-            new Point(14, 20), new Point(18, 21)
+
+           new Point(8, 4), new Point(15, 4), new Point(19, 4), new Point(4, 5), new Point(9, 6),
+            new Point(14, 6), new Point(18, 8), new Point(7, 11), new Point(22, 11), new Point(20, 13),
+            new Point(6, 14), new Point(17, 15), new Point(11, 17),new Point(12, 17), new Point(5, 18),
+            new Point(14, 19), new Point(18, 20)
+
         };
 
         public List<Point> finalRoomTiles = new List<Point> //최종추리방 문 좌표
         {
-            new Point(12, 10), new Point(10, 13), new Point(14, 13), new Point(12, 16)
+
+            new Point(12, 9), new Point(10, 12), new Point(14, 12), new Point(12, 15)
         };
 
         public Dictionary<string, string> secretPass = new Dictionary<string, string>
@@ -265,23 +270,23 @@ namespace clue_game6
 
             Dictionary<Point, string> roomNames = new Dictionary<Point, string>
             {
-                { new Point(4, 6), "주방" },
+                { new Point(4, 5), "주방" },
 
-                { new Point(8, 5), "무도회장" }, { new Point(15, 5), "무도회장" }, { new Point(9, 7), "무도회장" }, { new Point(14, 7), "무도회장" },
+                { new Point(8, 4), "무도회장" }, { new Point(15, 4), "무도회장" }, { new Point(9, 6), "무도회장" }, { new Point(14, 6), "무도회장" },
 
-                { new Point(5, 19), "라운지" },
+                { new Point(5, 18), "라운지" },
 
-                { new Point(7, 12), "식당" }, { new Point(6, 15), "식당" },
+                { new Point(7, 11), "식당" }, { new Point(6, 14), "식당" },
 
-                { new Point(19, 5), "온실"},
+                { new Point(19, 4), "온실"},
 
-                { new Point(11, 18), "홀"}, { new Point(12, 18), "홀"}, { new Point(14, 20), "홀"},
+                { new Point(11, 17), "홀"}, { new Point(12, 17), "홀"}, { new Point(14, 19), "홀"},
 
-                { new Point(22, 12), "당구장" }, { new Point(18, 9), "당구장" },
+                { new Point(22, 11), "당구장" }, { new Point(18, 8), "당구장" },
 
-                { new Point(20, 24), "서재" }, { new Point(17, 16), "서재" },
+                { new Point(20, 23), "서재" }, { new Point(17, 15), "서재" },
 
-                { new Point(18, 21), "공부방" },
+                { new Point(18, 20), "공부방" },
             };
 
             if (roomNames.ContainsKey(pos))

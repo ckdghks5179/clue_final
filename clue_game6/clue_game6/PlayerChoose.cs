@@ -56,14 +56,9 @@ namespace clue_game6
             {
                 TotalPlayers = playerCount,
                 Players = new Player[playerCount],
-                clue_map_point = new Point[25, 24]
             };
 
-            for (int i = 0; i < 25; i++)
-                for (int j = 0; j < 24; j++)
-                    gameState.clue_map_point[i, j] = new Point(8 + j * 20, 8 + i * 16);
-
-            int[] initialX = { 7, 17, 24, 0, 6, 19 };
+            int[] initialX = { 6, 16, 23, 0, 5, 18 };
             int[] initialY = { 0, 0, 7, 14, 23, 23 };
 
             for (int i = 0; i < playerCount; i++)
@@ -148,5 +143,7 @@ namespace clue_game6
                 }
             }
         }
+
+
     }
 }

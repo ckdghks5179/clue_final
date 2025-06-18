@@ -151,13 +151,20 @@ namespace clue_game6
                         {
                             form.gameState.Players[id].x = x;
                             form.gameState.Players[id].y = y;
+
+                            // 방 상태 재판단
+                            Point dest = new Point(y, x);
+                            form.gameState.Players[id].isInRoom =
+                                form.gameState.roomTiles.Contains(dest) ||
+                                form.gameState.clue_map[x, y] == 2;
                         }
 
                         this.Invoke((MethodInvoker)(() =>
                         {
                             foreach (var form in PlayerChoose.AllPlayerForms)
                             {
-                                form.UpdatePlayerPositions(); // UI 동기화
+                                form.UpdatePlayerPositions();
+                                form.UpdateControlState();
                             }
                         }));
                     }
@@ -326,27 +333,22 @@ namespace clue_game6
             return colors[id % colors.Length];
         }
 
-        public void UpdatePlayerPositions()
+        private void UpdatePlayerPositions()
         {
-            int cellSize = 32;
-            int boxSize = 16;
-
-            for (int i = 0; i < gameState.TotalPlayers; i++)
+            foreach (var kvp in playerBoxes)
             {
-                var p = gameState.Players[i];
+                int playerId = kvp.Key;
+                PictureBox playerBox = kvp.Value;
+                Player p = gameState.Players[playerId];
 
-                if (playerBoxes.ContainsKey(i))
-                {
-                    PictureBox playerBox = playerBoxes[i];
-
-                    Point cellPoint = gameState.clue_map_point[p.x, p.y];
-                    playerBox.Location = new Point(
-                        cellPoint.X + cellSize / 2 - boxSize / 2,
-                        cellPoint.Y - boxSize / 2
-                    );
-                }
+                Point cellPoint = gameState.clue_map_point[p.x, p.y];
+                playerBox.Location = new Point(
+                    cellPoint.X - playerBox.Width / 2,
+                    cellPoint.Y - playerBox.Height / 2
+                );
             }
         }
+
         private void Form1_Load(object sender, EventArgs e)
         {
             this.Text = $"Clue Game - Player {playerId + 1} ({player.name})";
@@ -365,8 +367,32 @@ namespace clue_game6
             pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
 
             // ===== playerBox 생성 및 위치 설정 =====
-            int cellSize = 33;
-            int boxSize = 16;
+            int originX = 16;
+            int originY = 4;
+            int cellWidth = 23;
+            int cellHeight = 15;
+            int boxSize = 14;
+
+            int boardWidth = gameState.clue_map.GetLength(0);
+            int boardHeight = gameState.clue_map.GetLength(1);
+
+            int correctedOriginX = pictureBox1.Location.X + originX;
+            int correctedOriginY = pictureBox1.Location.Y + originY;
+
+            int xOffset = (cellWidth - boxSize) / 2;
+            int yOffset = (cellHeight - boxSize) / 2;
+
+            gameState.clue_map_point = new Point[boardWidth, boardHeight]; // 클루 맵 포인트 초기화
+            for (int x = 0; x < boardWidth; x++)
+            {
+                for (int y = 0; y < boardHeight; y++)
+                {
+                    gameState.clue_map_point[x, y] = new Point(
+                        correctedOriginX + y * cellWidth + cellWidth / 2,
+                        correctedOriginY + x * cellHeight + cellHeight / 2
+                    );
+                }
+            }
 
             for (int i = 0; i < gameState.TotalPlayers; i++)
             {
@@ -383,9 +409,10 @@ namespace clue_game6
 
                 Point cellPoint = gameState.clue_map_point[p.x, p.y];
                 playerBox.Location = new Point(
-                    cellPoint.X + cellSize / 2 - boxSize / 2,
+                    cellPoint.X - boxSize / 2,
                     cellPoint.Y - boxSize / 2
                 );
+
 
                 playerBoxes[i] = playerBox;
                 this.Controls.Add(playerBox);
@@ -421,7 +448,7 @@ namespace clue_game6
             UpdateCurrentPlayerLabel();
 
             // ===== 창 크기 및 온라인 수신 시작 =====
-            this.ClientSize = new Size(800, 550);
+            this.ClientSize = new Size(900, 600);
             if (isNetworkMode) StartListening();
 
         }
@@ -695,6 +722,13 @@ namespace clue_game6
 
         private void btnFinalSug_Click(object sender, EventArgs e)
         {
+            //플레이어가 alive true일때만 반응
+            if (!player.isAlive)
+            {
+                MessageBox.Show("게임에서 탈락한 플레이어는 최종 추리를 할 수 없습니다.");
+                return;
+            }
+
             if (isNetworkMode)
             {
                 Thread.Sleep(50);
@@ -813,6 +847,33 @@ namespace clue_game6
                 int newY = nextLogicalPosition.Y;
                 player.x = newX;
                 player.y = newY;
+
+                Console.WriteLine($"[디버그] newX={newX}, newY={newY}");
+                Console.WriteLine($"[디버그] clue_map[newX, newY]={gameState.clue_map[newX, newY]}");
+
+                // clue_map_point가 null이거나 접근 불가능한지 확인
+                try
+                {
+                    Point dbgPoint = gameState.clue_map_point[newX, newY];
+                    Console.WriteLine($"[디버그] clue_map_point[newX, newY] = {dbgPoint}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[에러] clue_map_point 접근 실패: {ex.Message}");
+                }
+
+                // 방 인식 상태 확인
+                bool inRoomMap = gameState.clue_map[newX, newY] == 2;
+                bool inRoomTiles = gameState.roomTiles.Contains(new Point(newX, newY));
+                Console.WriteLine($"[방 검사] clue_map == 2: {inRoomMap}, roomTiles.Contains: {inRoomTiles}");
+
+
+                Console.WriteLine("[방 좌표 목록]");
+                foreach (var pt in gameState.roomTiles)
+                {
+                    Console.WriteLine($"Room tile: ({pt.X}, {pt.Y})");
+                }
+
 
                 // clue_map 업데이트
                 if (gameState.clue_map[player.x, player.y] != 2 && gameState.clue_map[player.x, player.y] != 5)
@@ -1061,6 +1122,8 @@ namespace clue_game6
                 currentOffsets[btn] = currentOffset;
             }
         }
+
+
         private void BroadcastPlayerAction(string action)
         {
             string localMessage = $"🎮 {player.name}: {action}";

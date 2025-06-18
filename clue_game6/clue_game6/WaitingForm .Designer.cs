@@ -130,7 +130,7 @@
             this.Controls.Add(this.txtPlayerName);
             this.Controls.Add(this.label1);
             this.Name = "WaitingForm";
-            this.Text = "기대실";
+            this.Text = "대기실";
             this.Load += new System.EventHandler(this.WaitingForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
