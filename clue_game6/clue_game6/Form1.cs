@@ -718,6 +718,7 @@ namespace clue_game6
 
             suggest.Show();
             player.hasSuggested = true;
+            remainingSteps = 0;// 움직임 제한
         }
 
         private void btnFinalSug_Click(object sender, EventArgs e)
@@ -739,6 +740,7 @@ namespace clue_game6
                 suggest = new Form3(gameState, player, 2, playerId);
             }
             suggest.Show();
+            remainingSteps = 0;
         }
 
         private void button1_Click(object sender, EventArgs e)
